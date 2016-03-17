@@ -7,6 +7,7 @@ namespace crashup {
 
 class Crashup {
   std::string working_dir, server_address;
+  Stats _stats;
 
 public:
   Crashup(std::string working_dir, std::string server_address);
