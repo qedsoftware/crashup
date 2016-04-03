@@ -4,6 +4,7 @@
 #include "SettingsWidget.hpp"
 #include "crash_handler/CrashHandler.hpp"
 #include <QtCore/QProcess>
+#include "exceptions.hpp"
 
 
 namespace crashup {

@@ -1,7 +1,6 @@
 #include "CrashingWidget.hpp"
 #include "../crashup/Crashup.hpp"
 #include <QApplication>
-#include <QDebug>
 
 int main(int argc, char *argv[])
 {
@@ -24,5 +23,4 @@ int main(int argc, char *argv[])
     w.show();
 
     return demoapp.exec();
-    // return 0;
 }

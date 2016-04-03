@@ -67,7 +67,7 @@ namespace crashhandler {
 			return;
 
 #if defined(Q_OS_WIN32)
-	// TODO
+	throw TODOException("CrashHandlerPrivate::initCrashHandlerPrivate -- no OS_WIN support")
 #elif defined(Q_OS_LINUX)
 	google_breakpad::MinidumpDescriptor md(report_minidumps_dirpath);
 	pHandler = new google_breakpad::ExceptionHandler(
@@ -88,7 +88,7 @@ namespace crashhandler {
 							*/
 		);
 #elif defined(Q_OS_MAC) 
-	// TODO
+	throw TODOException("CrashHandlerPrivate::initCrashHandlerPrivate -- no OS_MAC support")
 #endif
 	}
 

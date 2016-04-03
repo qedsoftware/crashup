@@ -2,7 +2,6 @@
 #include <QDir>
 #include <QString>
 #include <QDebug>
-#include <exception>
 
 namespace crashup {
 
@@ -19,15 +18,7 @@ namespace crashup {
 	    return _stats;
 	}
 
-	class minidumpDirpathException : public std::exception 
-	{
-		virtual const char* what() const throw()
-		{
-			return "CrashHandler initialization exception: directory for minidump files does not exist and could not be "
-					"created or it is not writable. \n";
-		}
-	} mdPathEx;
-
+	
 	void Crashup::initCrashHandler(const std::string& report_minidumps_relative_dirpath) 
 	{
 
@@ -40,13 +31,13 @@ namespace crashup {
 		
 		if (!(QFileInfo(final_dir_path).isDir() && QFileInfo(final_dir_path).isWritable())) {
 			// if the requested dir still doesn't exist or there is no permittion to write in it -- throw exception
-			throw mdPathEx;
+			throw CrashupInitMinidumpDirpathException();
 		}	
 
 		std::string report_minidumps_absolute_dirpath = final_dir.absolutePath().toUtf8().constData();
 
 #if defined(Q_OS_WIN32)
-	// TODO
+	throw TODOException("Crashup::initCrashHandler -- no OS_WIN support")
 #elif defined(Q_OS_LINUX)
     this->_crashHandler = crashhandler::CrashHandler::instance();
     this->_crashHandler->init(report_minidumps_absolute_dirpath);
@@ -55,7 +46,7 @@ namespace crashup {
     																/* 			 to the callback function) are treated as unhandled and can be subsequently handled */ 
     																/*			 by another handler, they are being reported to the system */
 #elif defined(Q_OS_MAC)
-    // TODO
+    throw TODOException("Crashup::initCrashHandler -- no OS_MAC support")
 #endif
     	
 	}
@@ -63,6 +54,8 @@ namespace crashup {
 	void Crashup::writeMinidump() {
 		if (_crashHandler != nullptr)
 			_crashHandler->writeMinidump();
+		else
+			throw CrashupWriteMinidumpException("CrashHandler not initialized.");
 	}
 
 };	// namespace crashup
