@@ -29,6 +29,8 @@ private slots:
 
   void on_statsButton_clicked();
 
+  void on_downloadButton_clicked();
+
 private:
   Ui::CrashingWidget *ui;
   std::function<void(std::string, std::string)> logEvent;

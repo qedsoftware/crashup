@@ -20,6 +20,7 @@ else:
 
 class WriteMinidumpTests(unittest.TestCase):
     def setUp(self):
+        shutil.rmtree("minidumps", ignore_errors=True)
         assert not os.path.exists("minidumps")
 
     def tearDown(self):

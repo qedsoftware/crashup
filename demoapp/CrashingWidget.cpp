@@ -1,4 +1,5 @@
 #include "CrashingWidget.hpp"
+#include "../../crashup/updates/Downloader.hpp"
 #include "ui_CrashingWidget.h"
 
 #include <signal.h>
@@ -21,4 +22,10 @@ void CrashingWidget::on_segfaultButton_clicked() { ::raise(SIGSEGV); }
 
 void CrashingWidget::on_statsButton_clicked() {
   logEvent("sample_event", ui->textEdit->toPlainText().toStdString());
+}
+
+void CrashingWidget::on_downloadButton_clicked() {
+  Downloader *d = new Downloader(ui->downloadDirectory->toPlainText(),
+                                 ui->url->toPlainText());
+  d->downloadFile();
 }

@@ -18,3 +18,9 @@ class TODOException : public std::runtime_error {
 public:
   TODOException(const char *msg) : std::runtime_error(msg) {}
 };
+
+class NoOpenedFileException : public std::exception {
+  virtual const char *what() const throw() {
+    return "Cannot write to file, file was not opened correctly. \n";
+  }
+};

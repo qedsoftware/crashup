@@ -15,12 +15,14 @@ else ()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif ()
 
-find_package(Qt5Widgets)
+find_package (Qt5Widgets)
 find_package (Threads REQUIRED)
+find_package (Qt5Network)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(QT_USE_QTNETWORK true)
 
 add_library(CrashingWidget CrashingWidget.cpp)
 target_link_libraries (CrashingWidget Qt5::Widgets)
@@ -44,6 +46,9 @@ add_library(Crashup ../crashup/Crashup.cpp)
 target_link_libraries (Crashup Qt5::Core)
 
 add_library(Stats ../crashup/stats/Stats.cpp)
+add_library(Downloader ../crashup/updates/Downloader.cpp)
+target_link_libraries (Downloader Qt5::Core)
+target_link_libraries (Downloader Qt5::Network)
 
 add_library(CrashHandler ../crashup/crash_handler/CrashHandler.cpp)
 ############################################################################
@@ -67,4 +72,5 @@ target_link_libraries (demoapp CrashingWidget)
 target_link_libraries (demoapp WidgetTracker)
 target_link_libraries (demoapp Crashup)
 target_link_libraries (demoapp Stats)
+target_link_libraries (demoapp Downloader)
 target_link_libraries (demoapp CrashHandler)
