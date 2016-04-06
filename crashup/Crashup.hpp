@@ -6,15 +6,14 @@
 #include <QtCore/QProcess>
 #include "exceptions.hpp"
 
-
 namespace crashup {
-  
+
 class Crashup {
 
 private:
   std::string working_dir, server_address;
   Stats _stats;
-  crashhandler::CrashHandler * _crashHandler;
+  crashhandler::CrashHandler *_crashHandler;
 
 public:
   Crashup(std::string working_dir, std::string server_address);
@@ -22,7 +21,7 @@ public:
   Stats &stats();
 
   /* initiates the _crashHandler */
-  void initCrashHandler(const std::string& report_minidumps_path);	
+  void initCrashHandler(const std::string &report_minidumps_path);
   /* writes a minidump whenever asked for */
   void writeMinidump();
 

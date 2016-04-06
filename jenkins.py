@@ -51,13 +51,24 @@ def install_cmake_repo():
     run("sudo apt-get update")
 
 
+def install_clang_format():
+    run('sudo apt-add-repository -y "deb http://llvm.org/apt/trusty/ llvm-toolchain-trusty-3.7 main"')
+    run('wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key|sudo apt-key add -')
+    run("sudo apt-get update")
+    run("sudo apt-get install -y --force-yes clang-format-3.7")
+
+
 def remote_build(hoststring, password):
     env.host_string = hoststring
     env.password = password
     env.abort_on_prompts = True
     env.reject_unknown_hosts = False
     with show('exceptions'):
-        run("sudo apt-get -y build-dep python-imaging")
+        try:
+            run('clang-format-3.7 --version')
+        except:
+            install_clang_format()
+        run('sudo apt-get -y build-dep python-imaging')
         pkgs = """
         libtiff5-dev libjpeg8-dev zlib1g-dev libfreetype6-dev liblcms2-dev
         libwebp-dev tcl8.6-dev tk8.6-dev python-tk tar xvfb cmake make

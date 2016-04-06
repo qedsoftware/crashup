@@ -8,6 +8,7 @@ import os
 import unittest
 import sys
 import subprocess
+from subprocess import CalledProcessError
 import shutil
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -38,6 +39,22 @@ def install_requirements():
         do_call("pip", "install", "pyautogui")
 
 
+def run_clang_format():
+    cmd = (
+        'shopt -s globstar && clang-format-3.7 -style=LLVM -output-replacements-xml '
+        'crashup/**/*.cpp crashup/**/*.hpp demoapp/**/*.cpp demoapp/**/*.hpp '
+        '| grep "<replacement "'
+    )
+    try:
+        print "RUNNING CLANG-FORMAT CHECKER"
+        do_call("bash", "-c", cmd)
+    except CalledProcessError as e:
+        if e.returncode != 1:
+            raise
+    else:
+        raise Exception("CLANG-FORMAT FAILED!")
+
+
 def build_app():
     shutil.rmtree("build", ignore_errors=True)
     os.mkdir("build")
@@ -65,5 +82,6 @@ if __name__ == "__main__":
         print "TODO: support systems other than linux"
     else:
         install_requirements()
+        run_clang_format()
         build_app()
         run_tests()
