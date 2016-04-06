@@ -40,6 +40,7 @@ def put_tar(local_name, remote_path):
         local('rm %s.tar' % local_name)
     with cd(remote_path):
         try:
+            run('rm -rf %s' % local_name)
             run('tar -xf %s.tar' % local_name)
         finally:
             run('rm %s.tar' % local_name)
