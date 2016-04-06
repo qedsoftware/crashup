@@ -82,6 +82,6 @@ if __name__ == "__main__":
         print "TODO: support systems other than linux"
     else:
         install_requirements()
-        run_clang_format()
         build_app()
         run_tests()
+        run_clang_format()
