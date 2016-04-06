@@ -12,6 +12,9 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 add_library(CrashingWidget CrashingWidget.cpp)
 target_link_libraries (CrashingWidget Qt5::Widgets)
 
+add_library(WidgetTracker WidgetTracker.cpp)
+target_link_libraries (WidgetTracker Qt5::Widgets)
+
 ############################################################################
 ### path to desktop_crashup project ########################################
 ############################################################################
@@ -39,6 +42,7 @@ target_link_libraries (CrashHandler ${CMAKE_THREAD_LIBS_INIT})
 
 add_executable(demoapp main.cpp)
 target_link_libraries (demoapp CrashingWidget)
+target_link_libraries (demoapp WidgetTracker)
 target_link_libraries (demoapp Crashup)
 target_link_libraries (demoapp Stats)
 target_link_libraries (demoapp CrashHandler)
