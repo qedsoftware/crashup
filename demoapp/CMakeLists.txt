@@ -1,6 +1,19 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(demoapp)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+if (MSVC)
+  # force linking UCRT statically ("/MTd" or "/MT" flag in "CL.exe")
+  # because google breakpad compilation links them statically and we don't
+  # want to touch it, so we change here to static instead of dynamic linking
+  foreach(flag_var
+        CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
+        CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO)
+   if(${flag_var} MATCHES "/MDd")
+      string(REGEX REPLACE "/MDd" "/MTd" ${flag_var} "${${flag_var}}")
+   endif(${flag_var} MATCHES "/MDd")
+   endforeach(flag_var)
+else ()
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+endif ()
 
 find_package(Qt5Widgets)
 find_package (Threads REQUIRED)
@@ -36,7 +49,16 @@ add_library(CrashHandler ../crashup/crash_handler/CrashHandler.cpp)
 ############################################################################
 ### breakpad static client library #########################################
 ############################################################################
-target_link_libraries (CrashHandler ${BREAKPAD_SRC_PATH}/client/linux/libbreakpad_client.a)
+if (MSVC)
+    target_link_libraries (CrashHandler ${BREAKPAD_SRC_PATH}/client/windows/Debug/lib/common.lib)
+    target_link_libraries (CrashHandler ${BREAKPAD_SRC_PATH}/client/windows/Debug/lib/crash_generation_client.lib)
+    target_link_libraries (CrashHandler ${BREAKPAD_SRC_PATH}/client/windows/Debug/lib/crash_generation_server.lib)
+    target_link_libraries (CrashHandler ${BREAKPAD_SRC_PATH}/client/windows/Debug/lib/crash_report_sender.lib)
+    target_link_libraries (CrashHandler ${BREAKPAD_SRC_PATH}/client/windows/Debug/lib/exception_handler.lib)
+    target_link_libraries (CrashHandler ${BREAKPAD_SRC_PATH}/client/windows/Debug/lib/processor_bits.lib)
+else ()
+    target_link_libraries (CrashHandler ${BREAKPAD_SRC_PATH}/client/linux/libbreakpad_client.a)
+endif ()
 target_link_libraries (CrashHandler Qt5::Core)
 target_link_libraries (CrashHandler ${CMAKE_THREAD_LIBS_INIT})
 

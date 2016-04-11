@@ -59,6 +59,21 @@ def install_clang_format():
     run("sudo apt-get install -y --force-yes clang-format-3.7")
 
 
+def deploy_auto_shutdown():
+    AUTO_SHUTDOWN_SCRIPT = """
+        #!/usr/bin/env python
+        cmd = '''last -10
+        | grep "`date +'%a %b %_d'`"
+        | sed 's_.*\([0-9][0-9]:[0-9][0-9]\).*_\1_'
+        '''.split("\n").join(" ")
+        out = subprocess.check_output(cmd, shell=True)
+        # TODO: do something with out
+        # out - all times of user logins and logouts from today in HH:MM format
+    """
+    # TODO TODO TODO
+    raise NotImplementedError
+
+
 def remote_build(hoststring, password):
     env.host_string = hoststring
     env.password = password

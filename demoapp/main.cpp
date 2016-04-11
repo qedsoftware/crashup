@@ -14,7 +14,7 @@ int main(int argc, char *argv[]) {
 
   /* just for the testing, generally these strings should be given my the user
    */
-  std::string working_dir_path = "./";
+  std::string working_dir_path = ".";
   std::string server_address = "servers_address";
   std::string report_minidumps_relative_dirpath =
       "minidumps"; // relative to the working_dir_path ! be careful not to start

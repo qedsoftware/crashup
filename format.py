@@ -1,3 +1,9 @@
+#!/usr/bin/env python
+# -----------------------------------------------------------------------------
+# Copyright (c) 2016 by Quantitative Engineering Design, Inc.
+# ALL RIGHTS RESERVED.
+# QED | Contact: William Wu <w@qed.ai>
+# -----------------------------------------------------------------------------
 import os
 import subprocess
 

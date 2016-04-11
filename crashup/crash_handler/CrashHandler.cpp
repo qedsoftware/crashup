@@ -50,6 +50,8 @@ bool dumpCallback(const char *_dump_dir, const char *_minidump_id,
 
 #if defined(Q_OS_LINUX)
   printf("Minidump saved as: %s\n", md.path());
+#elif defined(Q_OS_WIN32)
+  printf("Minidump saved as: %ls\n", _dump_dir);
 #endif
 
   /*
@@ -66,8 +68,15 @@ void CrashHandlerPrivate::initCrashHandlerPrivate(
     return;
 
 #if defined(Q_OS_WIN32)
-  throw TODOException(
-      "CrashHandlerPrivate::initCrashHandlerPrivate -- no OS_WIN support")
+  std::wstring pathAsStr(report_minidumps_dirpath.begin(),
+                         report_minidumps_dirpath.end());
+  pHandler =
+      new google_breakpad::ExceptionHandler(pathAsStr,
+                                            /*FilterCallback*/ 0, dumpCallback,
+                                            /*context*/
+                                            nullptr, true);
+// throw TODOException(
+//    "CrashHandlerPrivate::initCrashHandlerPrivate -- no OS_WIN support")
 #elif defined(Q_OS_LINUX)
   google_breakpad::MinidumpDescriptor md(report_minidumps_dirpath);
   pHandler = new google_breakpad::ExceptionHandler(
@@ -92,7 +101,7 @@ void CrashHandlerPrivate::initCrashHandlerPrivate(
       );
 #elif defined(Q_OS_MAC)
   throw TODOException(
-      "CrashHandlerPrivate::initCrashHandlerPrivate -- no OS_MAC support")
+      "CrashHandlerPrivate::initCrashHandlerPrivate -- no OS_MAC support");
 #endif
 }
 
@@ -126,4 +135,4 @@ bool CrashHandler::writeMinidump() {
   }
   return res;
 }
-}
+};

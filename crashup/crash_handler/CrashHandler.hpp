@@ -1,7 +1,14 @@
-#pragma once
+#if !defined(CRASHHANDLER_HPP)
+#define CRASHHANDLER_HPP
+
 #include <string>
 #include <QCoreApplication>
+
+#if defined(Q_OS_LINUX)
 #include "client/linux/handler/exception_handler.h"
+#elif defined(Q_OS_WIN32)
+#include "client/windows/handler/exception_handler.h"
+#endif
 
 namespace crashhandler {
 
@@ -20,4 +27,5 @@ private:
   CrashHandlerPrivate *pPrivCrashHandler;
   Q_DISABLE_COPY(CrashHandler)
 };
-}
+};
+#endif

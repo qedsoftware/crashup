@@ -36,9 +36,10 @@ void Crashup::initCrashHandler(
   std::string report_minidumps_absolute_dirpath =
       final_dir.absolutePath().toUtf8().constData();
 
-#if defined(Q_OS_WIN32)
-  throw TODOException("Crashup::initCrashHandler -- no OS_WIN support")
-#elif defined(Q_OS_LINUX)
+//#if defined(Q_OS_WIN32)
+//  throw TODOException("Crashup::initCrashHandler -- no OS_WIN support")
+//#elif defined(Q_OS_LINUX)
+#if 1
   this->_crashHandler = crashhandler::CrashHandler::instance();
   this->_crashHandler->init(report_minidumps_absolute_dirpath);
 // this->_crashHandler->setReportCrashesToSystem(true);			/* false
