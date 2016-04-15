@@ -38,6 +38,7 @@
 #ifndef GMOCK_INCLUDE_GMOCK_GMOCK_GENERATED_MATCHERS_H_
 #define GMOCK_INCLUDE_GMOCK_GMOCK_GENERATED_MATCHERS_H_
 
+#include <iterator>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -305,362 +306,6 @@ class ArgsMatcher {
   GTEST_DISALLOW_ASSIGN_(ArgsMatcher);
 };
 
-// Implements ElementsAre() of 1-10 arguments.
-
-template <typename T1>
-class ElementsAreMatcher1 {
- public:
-  explicit ElementsAreMatcher1(const T1& e1) : e1_(e1) {}
-
-  template <typename Container>
-  operator Matcher<Container>() const {
-    typedef GTEST_REMOVE_REFERENCE_AND_CONST_(Container) RawContainer;
-    typedef typename internal::StlContainerView<RawContainer>::type::value_type
-        Element;
-
-    // Nokia's Symbian Compiler has a nasty bug where the object put
-    // in a one-element local array is not destructed when the array
-    // goes out of scope.  This leads to obvious badness as we've
-    // added the linked_ptr in it to our other linked_ptrs list.
-    // Hence we implement ElementsAreMatcher1 specially to avoid using
-    // a local array.
-    const Matcher<const Element&> matcher =
-        MatcherCast<const Element&>(e1_);
-    return MakeMatcher(new ElementsAreMatcherImpl<Container>(&matcher, 1));
-  }
-
- private:
-  const T1& e1_;
-
-  GTEST_DISALLOW_ASSIGN_(ElementsAreMatcher1);
-};
-
-template <typename T1, typename T2>
-class ElementsAreMatcher2 {
- public:
-  ElementsAreMatcher2(const T1& e1, const T2& e2) : e1_(e1), e2_(e2) {}
-
-  template <typename Container>
-  operator Matcher<Container>() const {
-    typedef GTEST_REMOVE_REFERENCE_AND_CONST_(Container) RawContainer;
-    typedef typename internal::StlContainerView<RawContainer>::type::value_type
-        Element;
-
-    const Matcher<const Element&> matchers[] = {
-      MatcherCast<const Element&>(e1_),
-      MatcherCast<const Element&>(e2_),
-    };
-
-    return MakeMatcher(new ElementsAreMatcherImpl<Container>(matchers, 2));
-  }
-
- private:
-  const T1& e1_;
-  const T2& e2_;
-
-  GTEST_DISALLOW_ASSIGN_(ElementsAreMatcher2);
-};
-
-template <typename T1, typename T2, typename T3>
-class ElementsAreMatcher3 {
- public:
-  ElementsAreMatcher3(const T1& e1, const T2& e2, const T3& e3) : e1_(e1),
-      e2_(e2), e3_(e3) {}
-
-  template <typename Container>
-  operator Matcher<Container>() const {
-    typedef GTEST_REMOVE_REFERENCE_AND_CONST_(Container) RawContainer;
-    typedef typename internal::StlContainerView<RawContainer>::type::value_type
-        Element;
-
-    const Matcher<const Element&> matchers[] = {
-      MatcherCast<const Element&>(e1_),
-      MatcherCast<const Element&>(e2_),
-      MatcherCast<const Element&>(e3_),
-    };
-
-    return MakeMatcher(new ElementsAreMatcherImpl<Container>(matchers, 3));
-  }
-
- private:
-  const T1& e1_;
-  const T2& e2_;
-  const T3& e3_;
-
-  GTEST_DISALLOW_ASSIGN_(ElementsAreMatcher3);
-};
-
-template <typename T1, typename T2, typename T3, typename T4>
-class ElementsAreMatcher4 {
- public:
-  ElementsAreMatcher4(const T1& e1, const T2& e2, const T3& e3,
-      const T4& e4) : e1_(e1), e2_(e2), e3_(e3), e4_(e4) {}
-
-  template <typename Container>
-  operator Matcher<Container>() const {
-    typedef GTEST_REMOVE_REFERENCE_AND_CONST_(Container) RawContainer;
-    typedef typename internal::StlContainerView<RawContainer>::type::value_type
-        Element;
-
-    const Matcher<const Element&> matchers[] = {
-      MatcherCast<const Element&>(e1_),
-      MatcherCast<const Element&>(e2_),
-      MatcherCast<const Element&>(e3_),
-      MatcherCast<const Element&>(e4_),
-    };
-
-    return MakeMatcher(new ElementsAreMatcherImpl<Container>(matchers, 4));
-  }
-
- private:
-  const T1& e1_;
-  const T2& e2_;
-  const T3& e3_;
-  const T4& e4_;
-
-  GTEST_DISALLOW_ASSIGN_(ElementsAreMatcher4);
-};
-
-template <typename T1, typename T2, typename T3, typename T4, typename T5>
-class ElementsAreMatcher5 {
- public:
-  ElementsAreMatcher5(const T1& e1, const T2& e2, const T3& e3, const T4& e4,
-      const T5& e5) : e1_(e1), e2_(e2), e3_(e3), e4_(e4), e5_(e5) {}
-
-  template <typename Container>
-  operator Matcher<Container>() const {
-    typedef GTEST_REMOVE_REFERENCE_AND_CONST_(Container) RawContainer;
-    typedef typename internal::StlContainerView<RawContainer>::type::value_type
-        Element;
-
-    const Matcher<const Element&> matchers[] = {
-      MatcherCast<const Element&>(e1_),
-      MatcherCast<const Element&>(e2_),
-      MatcherCast<const Element&>(e3_),
-      MatcherCast<const Element&>(e4_),
-      MatcherCast<const Element&>(e5_),
-    };
-
-    return MakeMatcher(new ElementsAreMatcherImpl<Container>(matchers, 5));
-  }
-
- private:
-  const T1& e1_;
-  const T2& e2_;
-  const T3& e3_;
-  const T4& e4_;
-  const T5& e5_;
-
-  GTEST_DISALLOW_ASSIGN_(ElementsAreMatcher5);
-};
-
-template <typename T1, typename T2, typename T3, typename T4, typename T5,
-    typename T6>
-class ElementsAreMatcher6 {
- public:
-  ElementsAreMatcher6(const T1& e1, const T2& e2, const T3& e3, const T4& e4,
-      const T5& e5, const T6& e6) : e1_(e1), e2_(e2), e3_(e3), e4_(e4),
-      e5_(e5), e6_(e6) {}
-
-  template <typename Container>
-  operator Matcher<Container>() const {
-    typedef GTEST_REMOVE_REFERENCE_AND_CONST_(Container) RawContainer;
-    typedef typename internal::StlContainerView<RawContainer>::type::value_type
-        Element;
-
-    const Matcher<const Element&> matchers[] = {
-      MatcherCast<const Element&>(e1_),
-      MatcherCast<const Element&>(e2_),
-      MatcherCast<const Element&>(e3_),
-      MatcherCast<const Element&>(e4_),
-      MatcherCast<const Element&>(e5_),
-      MatcherCast<const Element&>(e6_),
-    };
-
-    return MakeMatcher(new ElementsAreMatcherImpl<Container>(matchers, 6));
-  }
-
- private:
-  const T1& e1_;
-  const T2& e2_;
-  const T3& e3_;
-  const T4& e4_;
-  const T5& e5_;
-  const T6& e6_;
-
-  GTEST_DISALLOW_ASSIGN_(ElementsAreMatcher6);
-};
-
-template <typename T1, typename T2, typename T3, typename T4, typename T5,
-    typename T6, typename T7>
-class ElementsAreMatcher7 {
- public:
-  ElementsAreMatcher7(const T1& e1, const T2& e2, const T3& e3, const T4& e4,
-      const T5& e5, const T6& e6, const T7& e7) : e1_(e1), e2_(e2), e3_(e3),
-      e4_(e4), e5_(e5), e6_(e6), e7_(e7) {}
-
-  template <typename Container>
-  operator Matcher<Container>() const {
-    typedef GTEST_REMOVE_REFERENCE_AND_CONST_(Container) RawContainer;
-    typedef typename internal::StlContainerView<RawContainer>::type::value_type
-        Element;
-
-    const Matcher<const Element&> matchers[] = {
-      MatcherCast<const Element&>(e1_),
-      MatcherCast<const Element&>(e2_),
-      MatcherCast<const Element&>(e3_),
-      MatcherCast<const Element&>(e4_),
-      MatcherCast<const Element&>(e5_),
-      MatcherCast<const Element&>(e6_),
-      MatcherCast<const Element&>(e7_),
-    };
-
-    return MakeMatcher(new ElementsAreMatcherImpl<Container>(matchers, 7));
-  }
-
- private:
-  const T1& e1_;
-  const T2& e2_;
-  const T3& e3_;
-  const T4& e4_;
-  const T5& e5_;
-  const T6& e6_;
-  const T7& e7_;
-
-  GTEST_DISALLOW_ASSIGN_(ElementsAreMatcher7);
-};
-
-template <typename T1, typename T2, typename T3, typename T4, typename T5,
-    typename T6, typename T7, typename T8>
-class ElementsAreMatcher8 {
- public:
-  ElementsAreMatcher8(const T1& e1, const T2& e2, const T3& e3, const T4& e4,
-      const T5& e5, const T6& e6, const T7& e7, const T8& e8) : e1_(e1),
-      e2_(e2), e3_(e3), e4_(e4), e5_(e5), e6_(e6), e7_(e7), e8_(e8) {}
-
-  template <typename Container>
-  operator Matcher<Container>() const {
-    typedef GTEST_REMOVE_REFERENCE_AND_CONST_(Container) RawContainer;
-    typedef typename internal::StlContainerView<RawContainer>::type::value_type
-        Element;
-
-    const Matcher<const Element&> matchers[] = {
-      MatcherCast<const Element&>(e1_),
-      MatcherCast<const Element&>(e2_),
-      MatcherCast<const Element&>(e3_),
-      MatcherCast<const Element&>(e4_),
-      MatcherCast<const Element&>(e5_),
-      MatcherCast<const Element&>(e6_),
-      MatcherCast<const Element&>(e7_),
-      MatcherCast<const Element&>(e8_),
-    };
-
-    return MakeMatcher(new ElementsAreMatcherImpl<Container>(matchers, 8));
-  }
-
- private:
-  const T1& e1_;
-  const T2& e2_;
-  const T3& e3_;
-  const T4& e4_;
-  const T5& e5_;
-  const T6& e6_;
-  const T7& e7_;
-  const T8& e8_;
-
-  GTEST_DISALLOW_ASSIGN_(ElementsAreMatcher8);
-};
-
-template <typename T1, typename T2, typename T3, typename T4, typename T5,
-    typename T6, typename T7, typename T8, typename T9>
-class ElementsAreMatcher9 {
- public:
-  ElementsAreMatcher9(const T1& e1, const T2& e2, const T3& e3, const T4& e4,
-      const T5& e5, const T6& e6, const T7& e7, const T8& e8,
-      const T9& e9) : e1_(e1), e2_(e2), e3_(e3), e4_(e4), e5_(e5), e6_(e6),
-      e7_(e7), e8_(e8), e9_(e9) {}
-
-  template <typename Container>
-  operator Matcher<Container>() const {
-    typedef GTEST_REMOVE_REFERENCE_AND_CONST_(Container) RawContainer;
-    typedef typename internal::StlContainerView<RawContainer>::type::value_type
-        Element;
-
-    const Matcher<const Element&> matchers[] = {
-      MatcherCast<const Element&>(e1_),
-      MatcherCast<const Element&>(e2_),
-      MatcherCast<const Element&>(e3_),
-      MatcherCast<const Element&>(e4_),
-      MatcherCast<const Element&>(e5_),
-      MatcherCast<const Element&>(e6_),
-      MatcherCast<const Element&>(e7_),
-      MatcherCast<const Element&>(e8_),
-      MatcherCast<const Element&>(e9_),
-    };
-
-    return MakeMatcher(new ElementsAreMatcherImpl<Container>(matchers, 9));
-  }
-
- private:
-  const T1& e1_;
-  const T2& e2_;
-  const T3& e3_;
-  const T4& e4_;
-  const T5& e5_;
-  const T6& e6_;
-  const T7& e7_;
-  const T8& e8_;
-  const T9& e9_;
-
-  GTEST_DISALLOW_ASSIGN_(ElementsAreMatcher9);
-};
-
-template <typename T1, typename T2, typename T3, typename T4, typename T5,
-    typename T6, typename T7, typename T8, typename T9, typename T10>
-class ElementsAreMatcher10 {
- public:
-  ElementsAreMatcher10(const T1& e1, const T2& e2, const T3& e3, const T4& e4,
-      const T5& e5, const T6& e6, const T7& e7, const T8& e8, const T9& e9,
-      const T10& e10) : e1_(e1), e2_(e2), e3_(e3), e4_(e4), e5_(e5), e6_(e6),
-      e7_(e7), e8_(e8), e9_(e9), e10_(e10) {}
-
-  template <typename Container>
-  operator Matcher<Container>() const {
-    typedef GTEST_REMOVE_REFERENCE_AND_CONST_(Container) RawContainer;
-    typedef typename internal::StlContainerView<RawContainer>::type::value_type
-        Element;
-
-    const Matcher<const Element&> matchers[] = {
-      MatcherCast<const Element&>(e1_),
-      MatcherCast<const Element&>(e2_),
-      MatcherCast<const Element&>(e3_),
-      MatcherCast<const Element&>(e4_),
-      MatcherCast<const Element&>(e5_),
-      MatcherCast<const Element&>(e6_),
-      MatcherCast<const Element&>(e7_),
-      MatcherCast<const Element&>(e8_),
-      MatcherCast<const Element&>(e9_),
-      MatcherCast<const Element&>(e10_),
-    };
-
-    return MakeMatcher(new ElementsAreMatcherImpl<Container>(matchers, 10));
-  }
-
- private:
-  const T1& e1_;
-  const T2& e2_;
-  const T3& e3_;
-  const T4& e4_;
-  const T5& e5_;
-  const T6& e6_;
-  const T7& e7_;
-  const T8& e8_;
-  const T9& e9_;
-  const T10& e10_;
-
-  GTEST_DISALLOW_ASSIGN_(ElementsAreMatcher10);
-};
-
 // A set of metafunctions for computing the result type of AllOf.
 // AllOf(m1, ..., mN) returns
 // AllOfResultN<decltype(m1), ..., decltype(mN)>::type.
@@ -917,112 +562,447 @@ Args(const InnerMatcher& matcher) {
       k9, k10>(matcher);
 }
 
-// ElementsAre(e0, e1, ..., e_n) matches an STL-style container with
-// (n + 1) elements, where the i-th element in the container must
+// ElementsAre(e_1, e_2, ... e_n) matches an STL-style container with
+// n elements, where the i-th element in the container must
 // match the i-th argument in the list.  Each argument of
 // ElementsAre() can be either a value or a matcher.  We support up to
 // 10 arguments.
+//
+// The use of DecayArray in the implementation allows ElementsAre()
+// to accept string literals, whose type is const char[N], but we
+// want to treat them as const char*.
 //
 // NOTE: Since ElementsAre() cares about the order of the elements, it
 // must not be used with containers whose elements's order is
 // undefined (e.g. hash_map).
 
-inline internal::ElementsAreMatcher0 ElementsAre() {
-  return internal::ElementsAreMatcher0();
+inline internal::ElementsAreMatcher<
+    std::tr1::tuple<> >
+ElementsAre() {
+  typedef std::tr1::tuple<> Args;
+  return internal::ElementsAreMatcher<Args>(Args());
 }
 
 template <typename T1>
-inline internal::ElementsAreMatcher1<T1> ElementsAre(const T1& e1) {
-  return internal::ElementsAreMatcher1<T1>(e1);
+inline internal::ElementsAreMatcher<
+    std::tr1::tuple<
+        typename internal::DecayArray<T1>::type> >
+ElementsAre(const T1& e1) {
+  typedef std::tr1::tuple<
+      typename internal::DecayArray<T1>::type> Args;
+  return internal::ElementsAreMatcher<Args>(Args(e1));
 }
 
 template <typename T1, typename T2>
-inline internal::ElementsAreMatcher2<T1, T2> ElementsAre(const T1& e1,
-    const T2& e2) {
-  return internal::ElementsAreMatcher2<T1, T2>(e1, e2);
+inline internal::ElementsAreMatcher<
+    std::tr1::tuple<
+        typename internal::DecayArray<T1>::type,
+        typename internal::DecayArray<T2>::type> >
+ElementsAre(const T1& e1, const T2& e2) {
+  typedef std::tr1::tuple<
+      typename internal::DecayArray<T1>::type,
+      typename internal::DecayArray<T2>::type> Args;
+  return internal::ElementsAreMatcher<Args>(Args(e1, e2));
 }
 
 template <typename T1, typename T2, typename T3>
-inline internal::ElementsAreMatcher3<T1, T2, T3> ElementsAre(const T1& e1,
-    const T2& e2, const T3& e3) {
-  return internal::ElementsAreMatcher3<T1, T2, T3>(e1, e2, e3);
+inline internal::ElementsAreMatcher<
+    std::tr1::tuple<
+        typename internal::DecayArray<T1>::type,
+        typename internal::DecayArray<T2>::type,
+        typename internal::DecayArray<T3>::type> >
+ElementsAre(const T1& e1, const T2& e2, const T3& e3) {
+  typedef std::tr1::tuple<
+      typename internal::DecayArray<T1>::type,
+      typename internal::DecayArray<T2>::type,
+      typename internal::DecayArray<T3>::type> Args;
+  return internal::ElementsAreMatcher<Args>(Args(e1, e2, e3));
 }
 
 template <typename T1, typename T2, typename T3, typename T4>
-inline internal::ElementsAreMatcher4<T1, T2, T3, T4> ElementsAre(const T1& e1,
-    const T2& e2, const T3& e3, const T4& e4) {
-  return internal::ElementsAreMatcher4<T1, T2, T3, T4>(e1, e2, e3, e4);
+inline internal::ElementsAreMatcher<
+    std::tr1::tuple<
+        typename internal::DecayArray<T1>::type,
+        typename internal::DecayArray<T2>::type,
+        typename internal::DecayArray<T3>::type,
+        typename internal::DecayArray<T4>::type> >
+ElementsAre(const T1& e1, const T2& e2, const T3& e3, const T4& e4) {
+  typedef std::tr1::tuple<
+      typename internal::DecayArray<T1>::type,
+      typename internal::DecayArray<T2>::type,
+      typename internal::DecayArray<T3>::type,
+      typename internal::DecayArray<T4>::type> Args;
+  return internal::ElementsAreMatcher<Args>(Args(e1, e2, e3, e4));
 }
 
 template <typename T1, typename T2, typename T3, typename T4, typename T5>
-inline internal::ElementsAreMatcher5<T1, T2, T3, T4,
-    T5> ElementsAre(const T1& e1, const T2& e2, const T3& e3, const T4& e4,
+inline internal::ElementsAreMatcher<
+    std::tr1::tuple<
+        typename internal::DecayArray<T1>::type,
+        typename internal::DecayArray<T2>::type,
+        typename internal::DecayArray<T3>::type,
+        typename internal::DecayArray<T4>::type,
+        typename internal::DecayArray<T5>::type> >
+ElementsAre(const T1& e1, const T2& e2, const T3& e3, const T4& e4,
     const T5& e5) {
-  return internal::ElementsAreMatcher5<T1, T2, T3, T4, T5>(e1, e2, e3, e4, e5);
+  typedef std::tr1::tuple<
+      typename internal::DecayArray<T1>::type,
+      typename internal::DecayArray<T2>::type,
+      typename internal::DecayArray<T3>::type,
+      typename internal::DecayArray<T4>::type,
+      typename internal::DecayArray<T5>::type> Args;
+  return internal::ElementsAreMatcher<Args>(Args(e1, e2, e3, e4, e5));
 }
 
 template <typename T1, typename T2, typename T3, typename T4, typename T5,
     typename T6>
-inline internal::ElementsAreMatcher6<T1, T2, T3, T4, T5,
-    T6> ElementsAre(const T1& e1, const T2& e2, const T3& e3, const T4& e4,
+inline internal::ElementsAreMatcher<
+    std::tr1::tuple<
+        typename internal::DecayArray<T1>::type,
+        typename internal::DecayArray<T2>::type,
+        typename internal::DecayArray<T3>::type,
+        typename internal::DecayArray<T4>::type,
+        typename internal::DecayArray<T5>::type,
+        typename internal::DecayArray<T6>::type> >
+ElementsAre(const T1& e1, const T2& e2, const T3& e3, const T4& e4,
     const T5& e5, const T6& e6) {
-  return internal::ElementsAreMatcher6<T1, T2, T3, T4, T5, T6>(e1, e2, e3, e4,
-      e5, e6);
+  typedef std::tr1::tuple<
+      typename internal::DecayArray<T1>::type,
+      typename internal::DecayArray<T2>::type,
+      typename internal::DecayArray<T3>::type,
+      typename internal::DecayArray<T4>::type,
+      typename internal::DecayArray<T5>::type,
+      typename internal::DecayArray<T6>::type> Args;
+  return internal::ElementsAreMatcher<Args>(Args(e1, e2, e3, e4, e5, e6));
 }
 
 template <typename T1, typename T2, typename T3, typename T4, typename T5,
     typename T6, typename T7>
-inline internal::ElementsAreMatcher7<T1, T2, T3, T4, T5, T6,
-    T7> ElementsAre(const T1& e1, const T2& e2, const T3& e3, const T4& e4,
+inline internal::ElementsAreMatcher<
+    std::tr1::tuple<
+        typename internal::DecayArray<T1>::type,
+        typename internal::DecayArray<T2>::type,
+        typename internal::DecayArray<T3>::type,
+        typename internal::DecayArray<T4>::type,
+        typename internal::DecayArray<T5>::type,
+        typename internal::DecayArray<T6>::type,
+        typename internal::DecayArray<T7>::type> >
+ElementsAre(const T1& e1, const T2& e2, const T3& e3, const T4& e4,
     const T5& e5, const T6& e6, const T7& e7) {
-  return internal::ElementsAreMatcher7<T1, T2, T3, T4, T5, T6, T7>(e1, e2, e3,
-      e4, e5, e6, e7);
+  typedef std::tr1::tuple<
+      typename internal::DecayArray<T1>::type,
+      typename internal::DecayArray<T2>::type,
+      typename internal::DecayArray<T3>::type,
+      typename internal::DecayArray<T4>::type,
+      typename internal::DecayArray<T5>::type,
+      typename internal::DecayArray<T6>::type,
+      typename internal::DecayArray<T7>::type> Args;
+  return internal::ElementsAreMatcher<Args>(Args(e1, e2, e3, e4, e5, e6, e7));
 }
 
 template <typename T1, typename T2, typename T3, typename T4, typename T5,
     typename T6, typename T7, typename T8>
-inline internal::ElementsAreMatcher8<T1, T2, T3, T4, T5, T6, T7,
-    T8> ElementsAre(const T1& e1, const T2& e2, const T3& e3, const T4& e4,
+inline internal::ElementsAreMatcher<
+    std::tr1::tuple<
+        typename internal::DecayArray<T1>::type,
+        typename internal::DecayArray<T2>::type,
+        typename internal::DecayArray<T3>::type,
+        typename internal::DecayArray<T4>::type,
+        typename internal::DecayArray<T5>::type,
+        typename internal::DecayArray<T6>::type,
+        typename internal::DecayArray<T7>::type,
+        typename internal::DecayArray<T8>::type> >
+ElementsAre(const T1& e1, const T2& e2, const T3& e3, const T4& e4,
     const T5& e5, const T6& e6, const T7& e7, const T8& e8) {
-  return internal::ElementsAreMatcher8<T1, T2, T3, T4, T5, T6, T7, T8>(e1, e2,
-      e3, e4, e5, e6, e7, e8);
+  typedef std::tr1::tuple<
+      typename internal::DecayArray<T1>::type,
+      typename internal::DecayArray<T2>::type,
+      typename internal::DecayArray<T3>::type,
+      typename internal::DecayArray<T4>::type,
+      typename internal::DecayArray<T5>::type,
+      typename internal::DecayArray<T6>::type,
+      typename internal::DecayArray<T7>::type,
+      typename internal::DecayArray<T8>::type> Args;
+  return internal::ElementsAreMatcher<Args>(Args(e1, e2, e3, e4, e5, e6, e7,
+      e8));
 }
 
 template <typename T1, typename T2, typename T3, typename T4, typename T5,
     typename T6, typename T7, typename T8, typename T9>
-inline internal::ElementsAreMatcher9<T1, T2, T3, T4, T5, T6, T7, T8,
-    T9> ElementsAre(const T1& e1, const T2& e2, const T3& e3, const T4& e4,
+inline internal::ElementsAreMatcher<
+    std::tr1::tuple<
+        typename internal::DecayArray<T1>::type,
+        typename internal::DecayArray<T2>::type,
+        typename internal::DecayArray<T3>::type,
+        typename internal::DecayArray<T4>::type,
+        typename internal::DecayArray<T5>::type,
+        typename internal::DecayArray<T6>::type,
+        typename internal::DecayArray<T7>::type,
+        typename internal::DecayArray<T8>::type,
+        typename internal::DecayArray<T9>::type> >
+ElementsAre(const T1& e1, const T2& e2, const T3& e3, const T4& e4,
     const T5& e5, const T6& e6, const T7& e7, const T8& e8, const T9& e9) {
-  return internal::ElementsAreMatcher9<T1, T2, T3, T4, T5, T6, T7, T8, T9>(e1,
-      e2, e3, e4, e5, e6, e7, e8, e9);
+  typedef std::tr1::tuple<
+      typename internal::DecayArray<T1>::type,
+      typename internal::DecayArray<T2>::type,
+      typename internal::DecayArray<T3>::type,
+      typename internal::DecayArray<T4>::type,
+      typename internal::DecayArray<T5>::type,
+      typename internal::DecayArray<T6>::type,
+      typename internal::DecayArray<T7>::type,
+      typename internal::DecayArray<T8>::type,
+      typename internal::DecayArray<T9>::type> Args;
+  return internal::ElementsAreMatcher<Args>(Args(e1, e2, e3, e4, e5, e6, e7,
+      e8, e9));
 }
 
 template <typename T1, typename T2, typename T3, typename T4, typename T5,
     typename T6, typename T7, typename T8, typename T9, typename T10>
-inline internal::ElementsAreMatcher10<T1, T2, T3, T4, T5, T6, T7, T8, T9,
-    T10> ElementsAre(const T1& e1, const T2& e2, const T3& e3, const T4& e4,
+inline internal::ElementsAreMatcher<
+    std::tr1::tuple<
+        typename internal::DecayArray<T1>::type,
+        typename internal::DecayArray<T2>::type,
+        typename internal::DecayArray<T3>::type,
+        typename internal::DecayArray<T4>::type,
+        typename internal::DecayArray<T5>::type,
+        typename internal::DecayArray<T6>::type,
+        typename internal::DecayArray<T7>::type,
+        typename internal::DecayArray<T8>::type,
+        typename internal::DecayArray<T9>::type,
+        typename internal::DecayArray<T10>::type> >
+ElementsAre(const T1& e1, const T2& e2, const T3& e3, const T4& e4,
     const T5& e5, const T6& e6, const T7& e7, const T8& e8, const T9& e9,
     const T10& e10) {
-  return internal::ElementsAreMatcher10<T1, T2, T3, T4, T5, T6, T7, T8, T9,
-      T10>(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10);
+  typedef std::tr1::tuple<
+      typename internal::DecayArray<T1>::type,
+      typename internal::DecayArray<T2>::type,
+      typename internal::DecayArray<T3>::type,
+      typename internal::DecayArray<T4>::type,
+      typename internal::DecayArray<T5>::type,
+      typename internal::DecayArray<T6>::type,
+      typename internal::DecayArray<T7>::type,
+      typename internal::DecayArray<T8>::type,
+      typename internal::DecayArray<T9>::type,
+      typename internal::DecayArray<T10>::type> Args;
+  return internal::ElementsAreMatcher<Args>(Args(e1, e2, e3, e4, e5, e6, e7,
+      e8, e9, e10));
 }
 
-// ElementsAreArray(array) and ElementAreArray(array, count) are like
-// ElementsAre(), except that they take an array of values or
-// matchers.  The former form infers the size of 'array', which must
-// be a static C-style array.  In the latter form, 'array' can either
-// be a static array or a pointer to a dynamically created array.
+// UnorderedElementsAre(e_1, e_2, ..., e_n) is an ElementsAre extension
+// that matches n elements in any order.  We support up to n=10 arguments.
 
-template <typename T>
-inline internal::ElementsAreArrayMatcher<T> ElementsAreArray(
-    const T* first, size_t count) {
-  return internal::ElementsAreArrayMatcher<T>(first, count);
+inline internal::UnorderedElementsAreMatcher<
+    std::tr1::tuple<> >
+UnorderedElementsAre() {
+  typedef std::tr1::tuple<> Args;
+  return internal::UnorderedElementsAreMatcher<Args>(Args());
 }
 
-template <typename T, size_t N>
-inline internal::ElementsAreArrayMatcher<T>
-ElementsAreArray(const T (&array)[N]) {
-  return internal::ElementsAreArrayMatcher<T>(array, N);
+template <typename T1>
+inline internal::UnorderedElementsAreMatcher<
+    std::tr1::tuple<
+        typename internal::DecayArray<T1>::type> >
+UnorderedElementsAre(const T1& e1) {
+  typedef std::tr1::tuple<
+      typename internal::DecayArray<T1>::type> Args;
+  return internal::UnorderedElementsAreMatcher<Args>(Args(e1));
+}
+
+template <typename T1, typename T2>
+inline internal::UnorderedElementsAreMatcher<
+    std::tr1::tuple<
+        typename internal::DecayArray<T1>::type,
+        typename internal::DecayArray<T2>::type> >
+UnorderedElementsAre(const T1& e1, const T2& e2) {
+  typedef std::tr1::tuple<
+      typename internal::DecayArray<T1>::type,
+      typename internal::DecayArray<T2>::type> Args;
+  return internal::UnorderedElementsAreMatcher<Args>(Args(e1, e2));
+}
+
+template <typename T1, typename T2, typename T3>
+inline internal::UnorderedElementsAreMatcher<
+    std::tr1::tuple<
+        typename internal::DecayArray<T1>::type,
+        typename internal::DecayArray<T2>::type,
+        typename internal::DecayArray<T3>::type> >
+UnorderedElementsAre(const T1& e1, const T2& e2, const T3& e3) {
+  typedef std::tr1::tuple<
+      typename internal::DecayArray<T1>::type,
+      typename internal::DecayArray<T2>::type,
+      typename internal::DecayArray<T3>::type> Args;
+  return internal::UnorderedElementsAreMatcher<Args>(Args(e1, e2, e3));
+}
+
+template <typename T1, typename T2, typename T3, typename T4>
+inline internal::UnorderedElementsAreMatcher<
+    std::tr1::tuple<
+        typename internal::DecayArray<T1>::type,
+        typename internal::DecayArray<T2>::type,
+        typename internal::DecayArray<T3>::type,
+        typename internal::DecayArray<T4>::type> >
+UnorderedElementsAre(const T1& e1, const T2& e2, const T3& e3, const T4& e4) {
+  typedef std::tr1::tuple<
+      typename internal::DecayArray<T1>::type,
+      typename internal::DecayArray<T2>::type,
+      typename internal::DecayArray<T3>::type,
+      typename internal::DecayArray<T4>::type> Args;
+  return internal::UnorderedElementsAreMatcher<Args>(Args(e1, e2, e3, e4));
+}
+
+template <typename T1, typename T2, typename T3, typename T4, typename T5>
+inline internal::UnorderedElementsAreMatcher<
+    std::tr1::tuple<
+        typename internal::DecayArray<T1>::type,
+        typename internal::DecayArray<T2>::type,
+        typename internal::DecayArray<T3>::type,
+        typename internal::DecayArray<T4>::type,
+        typename internal::DecayArray<T5>::type> >
+UnorderedElementsAre(const T1& e1, const T2& e2, const T3& e3, const T4& e4,
+    const T5& e5) {
+  typedef std::tr1::tuple<
+      typename internal::DecayArray<T1>::type,
+      typename internal::DecayArray<T2>::type,
+      typename internal::DecayArray<T3>::type,
+      typename internal::DecayArray<T4>::type,
+      typename internal::DecayArray<T5>::type> Args;
+  return internal::UnorderedElementsAreMatcher<Args>(Args(e1, e2, e3, e4, e5));
+}
+
+template <typename T1, typename T2, typename T3, typename T4, typename T5,
+    typename T6>
+inline internal::UnorderedElementsAreMatcher<
+    std::tr1::tuple<
+        typename internal::DecayArray<T1>::type,
+        typename internal::DecayArray<T2>::type,
+        typename internal::DecayArray<T3>::type,
+        typename internal::DecayArray<T4>::type,
+        typename internal::DecayArray<T5>::type,
+        typename internal::DecayArray<T6>::type> >
+UnorderedElementsAre(const T1& e1, const T2& e2, const T3& e3, const T4& e4,
+    const T5& e5, const T6& e6) {
+  typedef std::tr1::tuple<
+      typename internal::DecayArray<T1>::type,
+      typename internal::DecayArray<T2>::type,
+      typename internal::DecayArray<T3>::type,
+      typename internal::DecayArray<T4>::type,
+      typename internal::DecayArray<T5>::type,
+      typename internal::DecayArray<T6>::type> Args;
+  return internal::UnorderedElementsAreMatcher<Args>(Args(e1, e2, e3, e4, e5,
+      e6));
+}
+
+template <typename T1, typename T2, typename T3, typename T4, typename T5,
+    typename T6, typename T7>
+inline internal::UnorderedElementsAreMatcher<
+    std::tr1::tuple<
+        typename internal::DecayArray<T1>::type,
+        typename internal::DecayArray<T2>::type,
+        typename internal::DecayArray<T3>::type,
+        typename internal::DecayArray<T4>::type,
+        typename internal::DecayArray<T5>::type,
+        typename internal::DecayArray<T6>::type,
+        typename internal::DecayArray<T7>::type> >
+UnorderedElementsAre(const T1& e1, const T2& e2, const T3& e3, const T4& e4,
+    const T5& e5, const T6& e6, const T7& e7) {
+  typedef std::tr1::tuple<
+      typename internal::DecayArray<T1>::type,
+      typename internal::DecayArray<T2>::type,
+      typename internal::DecayArray<T3>::type,
+      typename internal::DecayArray<T4>::type,
+      typename internal::DecayArray<T5>::type,
+      typename internal::DecayArray<T6>::type,
+      typename internal::DecayArray<T7>::type> Args;
+  return internal::UnorderedElementsAreMatcher<Args>(Args(e1, e2, e3, e4, e5,
+      e6, e7));
+}
+
+template <typename T1, typename T2, typename T3, typename T4, typename T5,
+    typename T6, typename T7, typename T8>
+inline internal::UnorderedElementsAreMatcher<
+    std::tr1::tuple<
+        typename internal::DecayArray<T1>::type,
+        typename internal::DecayArray<T2>::type,
+        typename internal::DecayArray<T3>::type,
+        typename internal::DecayArray<T4>::type,
+        typename internal::DecayArray<T5>::type,
+        typename internal::DecayArray<T6>::type,
+        typename internal::DecayArray<T7>::type,
+        typename internal::DecayArray<T8>::type> >
+UnorderedElementsAre(const T1& e1, const T2& e2, const T3& e3, const T4& e4,
+    const T5& e5, const T6& e6, const T7& e7, const T8& e8) {
+  typedef std::tr1::tuple<
+      typename internal::DecayArray<T1>::type,
+      typename internal::DecayArray<T2>::type,
+      typename internal::DecayArray<T3>::type,
+      typename internal::DecayArray<T4>::type,
+      typename internal::DecayArray<T5>::type,
+      typename internal::DecayArray<T6>::type,
+      typename internal::DecayArray<T7>::type,
+      typename internal::DecayArray<T8>::type> Args;
+  return internal::UnorderedElementsAreMatcher<Args>(Args(e1, e2, e3, e4, e5,
+      e6, e7, e8));
+}
+
+template <typename T1, typename T2, typename T3, typename T4, typename T5,
+    typename T6, typename T7, typename T8, typename T9>
+inline internal::UnorderedElementsAreMatcher<
+    std::tr1::tuple<
+        typename internal::DecayArray<T1>::type,
+        typename internal::DecayArray<T2>::type,
+        typename internal::DecayArray<T3>::type,
+        typename internal::DecayArray<T4>::type,
+        typename internal::DecayArray<T5>::type,
+        typename internal::DecayArray<T6>::type,
+        typename internal::DecayArray<T7>::type,
+        typename internal::DecayArray<T8>::type,
+        typename internal::DecayArray<T9>::type> >
+UnorderedElementsAre(const T1& e1, const T2& e2, const T3& e3, const T4& e4,
+    const T5& e5, const T6& e6, const T7& e7, const T8& e8, const T9& e9) {
+  typedef std::tr1::tuple<
+      typename internal::DecayArray<T1>::type,
+      typename internal::DecayArray<T2>::type,
+      typename internal::DecayArray<T3>::type,
+      typename internal::DecayArray<T4>::type,
+      typename internal::DecayArray<T5>::type,
+      typename internal::DecayArray<T6>::type,
+      typename internal::DecayArray<T7>::type,
+      typename internal::DecayArray<T8>::type,
+      typename internal::DecayArray<T9>::type> Args;
+  return internal::UnorderedElementsAreMatcher<Args>(Args(e1, e2, e3, e4, e5,
+      e6, e7, e8, e9));
+}
+
+template <typename T1, typename T2, typename T3, typename T4, typename T5,
+    typename T6, typename T7, typename T8, typename T9, typename T10>
+inline internal::UnorderedElementsAreMatcher<
+    std::tr1::tuple<
+        typename internal::DecayArray<T1>::type,
+        typename internal::DecayArray<T2>::type,
+        typename internal::DecayArray<T3>::type,
+        typename internal::DecayArray<T4>::type,
+        typename internal::DecayArray<T5>::type,
+        typename internal::DecayArray<T6>::type,
+        typename internal::DecayArray<T7>::type,
+        typename internal::DecayArray<T8>::type,
+        typename internal::DecayArray<T9>::type,
+        typename internal::DecayArray<T10>::type> >
+UnorderedElementsAre(const T1& e1, const T2& e2, const T3& e3, const T4& e4,
+    const T5& e5, const T6& e6, const T7& e7, const T8& e8, const T9& e9,
+    const T10& e10) {
+  typedef std::tr1::tuple<
+      typename internal::DecayArray<T1>::type,
+      typename internal::DecayArray<T2>::type,
+      typename internal::DecayArray<T3>::type,
+      typename internal::DecayArray<T4>::type,
+      typename internal::DecayArray<T5>::type,
+      typename internal::DecayArray<T6>::type,
+      typename internal::DecayArray<T7>::type,
+      typename internal::DecayArray<T8>::type,
+      typename internal::DecayArray<T9>::type,
+      typename internal::DecayArray<T10>::type> Args;
+  return internal::UnorderedElementsAreMatcher<Args>(Args(e1, e2, e3, e4, e5,
+      e6, e7, e8, e9, e10));
 }
 
 // AllOf(m1, m2, ..., mk) matches any value that matches all of the given

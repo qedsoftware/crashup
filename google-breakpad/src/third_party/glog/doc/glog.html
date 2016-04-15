@@ -168,6 +168,25 @@ See also <a href="#verbose">the section about verbose logging</a>.
 <p>There are some other flags defined in logging.cc.  Please grep the
 source code for "DEFINE_" to see a complete list of all flags.
 
+<p>You can also modify flag values in your program by modifying global
+variables <code>FLAGS_*</code> . Most settings start working
+immediately after you update <code>FLAGS_*</code> . The exceptions are
+the flags related to destination files. For example, you might want to
+set <code>FLAGS_log_dir</code> before
+calling <code>google::InitGoogleLogging</code> . Here is an example:
+
+<pre>
+   LOG(INFO) << "file";
+   // Most flags work immediately after updating values.
+   FLAGS_logtostderr = 1;
+   LOG(INFO) << "stderr";
+   FLAGS_logtostderr = 0;
+   // This won't change the log destination. If you want to set this
+   // value, you should do this before google::InitGoogleLogging .
+   FLAGS_log_dir = "/some/log/directory";
+   LOG(INFO) << "the same file";
+</pre>
+
 <h2><A NAME=conditional>Conditional / Occasional Logging</A></h2>
 
 <p>Sometimes, you may only want to log a message under certain
@@ -527,8 +546,48 @@ all log messages associated with <code>VLOG</code>s as well as
 <h3><A NAME=windows>Notes for Windows users</A></h3>
 
 <p>Google glog defines a severity level <code>ERROR</code>, which is
-also defined in <code>windows.h</code>
-There are two known workarounds to avoid this conflict:
+also defined in <code>windows.h</code> . You can make glog not define
+<code>INFO</code>, <code>WARNING</code>, <code>ERROR</code>,
+and <code>FATAL</code> by defining
+<code>GLOG_NO_ABBREVIATED_SEVERITIES</code> before
+including <code>glog/logging.h</code> . Even with this macro, you can
+still use the iostream like logging facilities:
+
+<pre>
+  #define GLOG_NO_ABBREVIATED_SEVERITIES
+  #include &lt;windows.h&gt;
+  #include &lt;glog/logging.h&gt;
+
+  // ...
+
+  LOG(ERROR) &lt;&lt; "This should work";
+  LOG_IF(ERROR, x &gt; y) &lt;&lt; "This should be also OK";
+</pre>
+
+<p>
+However, you cannot
+use <code>INFO</code>, <code>WARNING</code>, <code>ERROR</code>,
+and <code>FATAL</code> anymore for functions defined
+in <code>glog/logging.h</code> .
+
+<pre>
+  #define GLOG_NO_ABBREVIATED_SEVERITIES
+  #include &lt;windows.h&gt;
+  #include &lt;glog/logging.h&gt;
+
+  // ...
+
+  // This won't work.
+  // google::FlushLogFiles(google::ERROR);
+
+  // Use this instead.
+  google::FlushLogFiles(google::GLOG_ERROR);
+</pre>
+
+<p>
+If you don't need <code>ERROR</code> defined
+by <code>windows.h</code>, there are a couple of more workarounds
+which sometimes don't work:
 
 <ul>
   <li>#define <code>WIN32_LEAN_AND_MEAN</code> or <code>NOGDI</code>

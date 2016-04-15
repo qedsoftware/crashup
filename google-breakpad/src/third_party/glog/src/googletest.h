@@ -81,7 +81,7 @@ static inline string GetTempDir() {
 #endif
 }
 
-#ifdef OS_WINDOWS
+#if defined(OS_WINDOWS) && defined(_MSC_VER)
 // The test will run in glog/vsproject/<project name>
 // (e.g., glog/vsproject/logging_unittest).
 static const char TEST_SRC_DIR[] = "../..";
@@ -110,7 +110,7 @@ using testing::InitGoogleTest;
 
 _START_GOOGLE_NAMESPACE_
 
-void InitGoogleTest(int* argc, char** argv) {}
+void InitGoogleTest(int*, char**) {}
 
 // The following is some bare-bones testing infrastructure
 
@@ -450,19 +450,11 @@ static inline string Munge(const string& filename) {
     // Remove 0x prefix produced by %p. VC++ doesn't put the prefix.
     StringReplace(&line, " 0x", " ");
 
-    char errmsg_buf[100];
-    posix_strerror_r(0, errmsg_buf, sizeof(errmsg_buf));
-    if (*errmsg_buf == '\0') {
-      // MacOSX 10.4 and FreeBSD return empty string for errno=0.
-      // In such case, the we need to remove an extra space.
-      StringReplace(&line, "__SUCCESS__ ", "");
-    } else {
-      StringReplace(&line, "__SUCCESS__", errmsg_buf);
-    }
-    StringReplace(&line, "__ENOENT__", strerror(ENOENT));
-    StringReplace(&line, "__EINTR__", strerror(EINTR));
-    StringReplace(&line, "__ENXIO__", strerror(ENXIO));
-    StringReplace(&line, "__ENOEXEC__", strerror(ENOEXEC));
+    StringReplace(&line, "__SUCCESS__", StrError(0));
+    StringReplace(&line, "__ENOENT__", StrError(ENOENT));
+    StringReplace(&line, "__EINTR__", StrError(EINTR));
+    StringReplace(&line, "__ENXIO__", StrError(ENXIO));
+    StringReplace(&line, "__ENOEXEC__", StrError(ENOEXEC));
     result += line + "\n";
   }
   fclose(fp);
@@ -528,7 +520,7 @@ class Thread {
  public:
   virtual ~Thread() {}
 
-  void SetJoinable(bool joinable) {}
+  void SetJoinable(bool) {}
 #if defined(OS_WINDOWS) || defined(OS_CYGWIN)
   void Start() {
     handle_ = CreateThread(NULL,
@@ -584,21 +576,21 @@ void (*g_new_hook)() = NULL;
 
 _END_GOOGLE_NAMESPACE_
 
-void* operator new(size_t size) {
+void* operator new(size_t size) throw(std::bad_alloc) {
   if (GOOGLE_NAMESPACE::g_new_hook) {
     GOOGLE_NAMESPACE::g_new_hook();
   }
   return malloc(size);
 }
 
-void* operator new[](size_t size) {
+void* operator new[](size_t size) throw(std::bad_alloc) {
   return ::operator new(size);
 }
 
-void operator delete(void* p) {
+void operator delete(void* p) throw() {
   free(p);
 }
 
-void operator delete[](void* p) {
+void operator delete[](void* p) throw() {
   ::operator delete(p);
 }

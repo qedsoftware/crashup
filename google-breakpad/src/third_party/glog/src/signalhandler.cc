@@ -48,6 +48,9 @@
 
 _START_GOOGLE_NAMESPACE_
 
+// TOOD(hamaji): Use signal instead of sigaction?
+#ifdef HAVE_SIGACTION
+
 namespace {
 
 // We'll install the failure signal handler for these signals.  We could
@@ -169,7 +172,7 @@ void DumpTimeInfo() {
 void DumpSignalInfo(int signal_number, siginfo_t *siginfo) {
   // Get the signal name.
   const char* signal_name = NULL;
-  for (int i = 0; i < ARRAYSIZE(kFailureSignals); ++i) {
+  for (size_t i = 0; i < ARRAYSIZE(kFailureSignals); ++i) {
     if (signal_number == kFailureSignals[i].number) {
       signal_name = kFailureSignals[i].name;
     }
@@ -330,7 +333,10 @@ void FailureSignalHandler(int signal_number,
 
 }  // namespace
 
+#endif  // HAVE_SIGACTION
+
 void InstallFailureSignalHandler() {
+#ifdef HAVE_SIGACTION
   // Build the sigaction struct.
   struct sigaction sig_action;
   memset(&sig_action, 0, sizeof(sig_action));
@@ -338,13 +344,16 @@ void InstallFailureSignalHandler() {
   sig_action.sa_flags |= SA_SIGINFO;
   sig_action.sa_sigaction = &FailureSignalHandler;
 
-  for (int i = 0; i < ARRAYSIZE(kFailureSignals); ++i) {
+  for (size_t i = 0; i < ARRAYSIZE(kFailureSignals); ++i) {
     CHECK_ERR(sigaction(kFailureSignals[i].number, &sig_action, NULL));
   }
+#endif  // HAVE_SIGACTION
 }
 
 void InstallFailureWriter(void (*writer)(const char* data, int size)) {
+#ifdef HAVE_SIGACTION
   g_failure_writer = writer;
+#endif  // HAVE_SIGACTION
 }
 
 _END_GOOGLE_NAMESPACE_

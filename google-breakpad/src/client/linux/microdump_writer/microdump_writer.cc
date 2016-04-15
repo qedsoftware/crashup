@@ -34,20 +34,27 @@
 
 #include <sys/utsname.h>
 
+#include <algorithm>
+
 #include "client/linux/dump_writer_common/thread_info.h"
 #include "client/linux/dump_writer_common/ucontext_reader.h"
 #include "client/linux/handler/exception_handler.h"
+#include "client/linux/handler/microdump_extra_info.h"
 #include "client/linux/log/log.h"
 #include "client/linux/minidump_writer/linux_ptrace_dumper.h"
+#include "common/linux/file_id.h"
 #include "common/linux/linux_libc_support.h"
 
 namespace {
 
+using google_breakpad::auto_wasteful_vector;
 using google_breakpad::ExceptionHandler;
+using google_breakpad::kDefaultBuildIdSize;
 using google_breakpad::LinuxDumper;
 using google_breakpad::LinuxPtraceDumper;
 using google_breakpad::MappingInfo;
 using google_breakpad::MappingList;
+using google_breakpad::MicrodumpExtraInfo;
 using google_breakpad::RawContextCPU;
 using google_breakpad::ThreadInfo;
 using google_breakpad::UContextReader;
@@ -58,8 +65,7 @@ class MicrodumpWriter {
  public:
   MicrodumpWriter(const ExceptionHandler::CrashContext* context,
                   const MappingList& mappings,
-                  const char* build_fingerprint,
-                  const char* product_info,
+                  const MicrodumpExtraInfo& microdump_extra_info,
                   LinuxDumper* dumper)
       : ucontext_(context ? &context->context : NULL),
 #if !defined(__ARM_EABI__) && !defined(__mips__)
@@ -67,8 +73,7 @@ class MicrodumpWriter {
 #endif
         dumper_(dumper),
         mapping_list_(mappings),
-        build_fingerprint_(build_fingerprint),
-        product_info_(product_info),
+        microdump_extra_info_(microdump_extra_info),
         log_line_(NULL) {
     log_line_ = reinterpret_cast<char*>(Alloc(kLineBufferSize));
     if (log_line_)
@@ -92,6 +97,7 @@ class MicrodumpWriter {
     LogLine("-----BEGIN BREAKPAD MICRODUMP-----");
     DumpProductInformation();
     DumpOSInformation();
+    DumpGPUInformation();
     success = DumpCrashingThread();
     if (success)
       success = DumpMappings();
@@ -149,8 +155,8 @@ class MicrodumpWriter {
 
   void DumpProductInformation() {
     LogAppend("V ");
-    if (product_info_) {
-      LogAppend(product_info_);
+    if (microdump_extra_info_.product_info) {
+      LogAppend(microdump_extra_info_.product_info);
     } else {
       LogAppend("UNKNOWN:0.0.0.0");
     }
@@ -178,7 +184,13 @@ class MicrodumpWriter {
 #elif defined(__i386__)
     const char kArch[] = "x86";
 #elif defined(__mips__)
+# if _MIPS_SIM == _ABIO32
     const char kArch[] = "mips";
+# elif _MIPS_SIM == _ABI64
+    const char kArch[] = "mips64";
+# else
+#  error "This mips ABI is currently not supported (n32)"
+#endif
 #else
 #error "This code has not been ported to your platform yet"
 #endif
@@ -200,14 +212,24 @@ class MicrodumpWriter {
 
     // If the client has attached a build fingerprint to the MinidumpDescriptor
     // use that one. Otherwise try to get some basic info from uname().
-    if (build_fingerprint_) {
-      LogAppend(build_fingerprint_);
+    if (microdump_extra_info_.build_fingerprint) {
+      LogAppend(microdump_extra_info_.build_fingerprint);
     } else if (has_uts_info) {
       LogAppend(uts.release);
       LogAppend(" ");
       LogAppend(uts.version);
     } else {
       LogAppend("no build fingerprint available");
+    }
+    LogCommitLine();
+  }
+
+  void DumpGPUInformation() {
+    LogAppend("G ");
+    if (microdump_extra_info_.gpu_fingerprint) {
+      LogAppend(microdump_extra_info_.gpu_fingerprint);
+    } else {
+      LogAppend("UNKNOWN");
     }
     LogCommitLine();
   }
@@ -319,21 +341,31 @@ class MicrodumpWriter {
                   bool member,
                   unsigned int mapping_id,
                   const uint8_t* identifier) {
-    MDGUID module_identifier;
+
+    auto_wasteful_vector<uint8_t, kDefaultBuildIdSize> identifier_bytes(
+        dumper_->allocator());
+
     if (identifier) {
       // GUID was provided by caller.
-      my_memcpy(&module_identifier, identifier, sizeof(MDGUID));
+      identifier_bytes.insert(identifier_bytes.end(),
+                              identifier,
+                              identifier + sizeof(MDGUID));
     } else {
       dumper_->ElfFileIdentifierForMapping(
           mapping,
           member,
           mapping_id,
-          reinterpret_cast<uint8_t*>(&module_identifier));
+          identifier_bytes);
     }
+
+    // Copy as many bytes of |identifier| as will fit into a MDGUID
+    MDGUID module_identifier = {0};
+    memcpy(&module_identifier, &identifier_bytes[0],
+           std::min(sizeof(MDGUID), identifier_bytes.size()));
 
     char file_name[NAME_MAX];
     char file_path[NAME_MAX];
-    LinuxDumper::GetMappingEffectiveNameAndPath(
+    dumper_->GetMappingEffectiveNameAndPath(
         mapping, file_path, sizeof(file_path), file_name, sizeof(file_name));
 
     LogAppend("M ");
@@ -390,8 +422,7 @@ class MicrodumpWriter {
 #endif
   LinuxDumper* dumper_;
   const MappingList& mapping_list_;
-  const char* const build_fingerprint_;
-  const char* const product_info_;
+  const MicrodumpExtraInfo microdump_extra_info_;
   char* log_line_;
 };
 }  // namespace
@@ -402,8 +433,7 @@ bool WriteMicrodump(pid_t crashing_process,
                     const void* blob,
                     size_t blob_size,
                     const MappingList& mappings,
-                    const char* build_fingerprint,
-                    const char* product_info) {
+                    const MicrodumpExtraInfo& microdump_extra_info) {
   LinuxPtraceDumper dumper(crashing_process);
   const ExceptionHandler::CrashContext* context = NULL;
   if (blob) {
@@ -415,8 +445,7 @@ bool WriteMicrodump(pid_t crashing_process,
     dumper.set_crash_signal(context->siginfo.si_signo);
     dumper.set_crash_thread(context->tid);
   }
-  MicrodumpWriter writer(context, mappings, build_fingerprint, product_info,
-                         &dumper);
+  MicrodumpWriter writer(context, mappings, microdump_extra_info, &dumper);
   if (!writer.Init())
     return false;
   return writer.Dump();
