@@ -25,7 +25,7 @@ import fabric.contrib.files
 from fabric.api import env, show, hide, run, put, local, cd, settings, prefix
 
 
-DEFAULT_HOSTSTRING = "ubuntu@ec2-52-87-190-65.compute-1.amazonaws.com"
+DEFAULT_HOSTSTRING = "ubuntu@52.87.190.65"
 
 
 def put_tar(local_name, remote_path):
