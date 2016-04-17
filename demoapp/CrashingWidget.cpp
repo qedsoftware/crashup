@@ -5,10 +5,12 @@
 #include <signal.h>
 
 CrashingWidget::CrashingWidget(
-    std::function<void(std::string, std::string)> logEvent, QWidget *parent)
+    std::function<void(std::string, std::string)> logEvent,
+    std::function<void()> uploadMinidumpsFromDir, QWidget *parent)
     : QMainWindow(parent), ui(new Ui::CrashingWidget) {
   ui->setupUi(this);
   this->logEvent = logEvent;
+  this->uploadMinidumpsFromDir = uploadMinidumpsFromDir;
 }
 
 CrashingWidget::~CrashingWidget() { delete ui; }
@@ -29,3 +31,5 @@ void CrashingWidget::on_downloadButton_clicked() {
                                  ui->url->toPlainText());
   d->downloadFile();
 }
+
+void CrashingWidget::on_uploadButton_clicked() { uploadMinidumpsFromDir(); }

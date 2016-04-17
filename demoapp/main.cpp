@@ -3,6 +3,7 @@
 #include "WidgetTracker.hpp"
 #include <QApplication>
 #include <QDebug>
+#include <QString>
 
 int main(int argc, char *argv[]) {
   QApplication demoapp(argc, argv);
@@ -16,25 +17,33 @@ int main(int argc, char *argv[]) {
   /* just for the testing, generally these strings should be given my the user
    */
   std::string working_dir_path = ".";
-  std::string server_address = "servers_address";
-  std::string report_minidumps_relative_dirpath =
-      "minidumps"; // relative to the working_dir_path ! be careful not to start
-                   // with "/"
+  std::string server_address =
+      "http://ec2-52-91-29-60.compute-1.amazonaws.com/submit";
 
   crashup::Crashup crashup(working_dir_path, server_address);
 
   /* get the breakpad handler going -- minidumps written to a requested dir */
   /* throws exception if requested path is inaccessible */
-  crashup.initCrashHandler(report_minidumps_relative_dirpath);
+  crashup.initCrashHandler();
+
+  std::string product_name = "Test";
+  std::string product_version = "1.0";
+
+  /* initiates CrashUploader, configured to upload onto server_address */
+  /* given to the crashup constructor */
+  crashup.initCrashUploader(product_name, product_version);
 
   // crashup.writeMinidump();	/* creates and saves Minidump of the current
   // state on demand (does what would happen in case of a crash, without any
   // actual crash) */
   /* useful for testing or for unusual uses -- executions continues after that !
    */
-  CrashingWidget w([&](std::string event_name, std::string event_data) {
-    crashup.stats().logEvent(event_name, event_data);
-  });
+
+  CrashingWidget w(
+      [&](std::string event_name, std::string event_data) {
+        crashup.stats().logEvent(event_name, event_data);
+      },
+      [&]() { crashup.uploadPendingMinidumps(); });
   w.show();
 
   return demoapp.exec();

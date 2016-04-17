@@ -50,6 +50,22 @@ add_library(Downloader ../crashup/updates/Downloader.cpp)
 target_link_libraries (Downloader Qt5::Core)
 target_link_libraries (Downloader Qt5::Network)
 
+#################################
+### uploading crashes linking ###
+#################################
+if (UNIX)
+  add_library(LibcurlWrapper ${DESKTOP_CRASHUP_PATH}/crashup/crash_handler/libcurl_wrapper)
+  target_link_libraries(LibcurlWrapper ${CMAKE_DL_LIBS})
+  add_library(GoogleCrashUploader ${DESKTOP_CRASHUP_PATH}/crashup/crash_handler/google_crashdump_uploader)
+  target_link_libraries(GoogleCrashUploader LibcurlWrapper)
+endif (UNIX)
+
+add_library(CrashUploader ${DESKTOP_CRASHUP_PATH}/crashup/crash_handler/CrashUploader.cpp)
+if (UNIX)
+  target_link_libraries (CrashUploader GoogleCrashUploader)
+endif (UNIX)
+target_link_libraries (CrashUploader Qt5::Core)
+
 add_library(CrashHandler ../crashup/crash_handler/CrashHandler.cpp)
 ############################################################################
 ### breakpad static client library #########################################
@@ -74,3 +90,4 @@ target_link_libraries (demoapp Crashup)
 target_link_libraries (demoapp Stats)
 target_link_libraries (demoapp Downloader)
 target_link_libraries (demoapp CrashHandler)
+target_link_libraries (demoapp CrashUploader)

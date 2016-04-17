@@ -1,5 +1,8 @@
 #include <QMainWindow>
 #include <QException>
+#include <QFileDialog>
+#include <QString>
+#include <QCoreApplication>
 
 #include <string>
 #include <functional>
@@ -19,7 +22,7 @@ class CrashingWidget : public QMainWindow {
 
 public:
   CrashingWidget(std::function<void(std::string, std::string)> logEvent,
-                 QWidget *parent = 0);
+                 std::function<void()> uploadMinidump, QWidget *parent = 0);
   ~CrashingWidget();
 
 private slots:
@@ -31,7 +34,10 @@ private slots:
 
   void on_downloadButton_clicked();
 
+  void on_uploadButton_clicked();
+
 private:
   Ui::CrashingWidget *ui;
   std::function<void(std::string, std::string)> logEvent;
+  std::function<void()> uploadMinidumpsFromDir;
 };

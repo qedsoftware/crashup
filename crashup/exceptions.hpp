@@ -1,3 +1,4 @@
+#pragma once
 #include <exception>
 #include <string>
 
@@ -9,9 +10,9 @@ class CrashupInitMinidumpDirpathException : public std::exception {
   }
 };
 
-class CrashupWriteMinidumpException : public std::runtime_error {
+class CrashupInitializationException : public std::runtime_error {
 public:
-  CrashupWriteMinidumpException(const char *msg) : std::runtime_error(msg) {}
+  CrashupInitializationException(const char *msg) : std::runtime_error(msg) {}
 };
 
 class TODOException : public std::runtime_error {
@@ -22,5 +23,12 @@ public:
 class NoOpenedFileException : public std::exception {
   virtual const char *what() const throw() {
     return "Cannot write to file, file was not opened correctly. \n";
+  }
+};
+
+class UnexpectedHttpResponseException : public std::exception {
+  virtual const char *what() const throw() {
+    return "CrashUploader:uploadFinished() -- unexpected http response from "
+           "the crash report server.\n";
   }
 };

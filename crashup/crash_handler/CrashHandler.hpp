@@ -10,7 +10,7 @@
 #include "client/windows/handler/exception_handler.h"
 #endif
 
-namespace crashhandler {
+namespace crash_handling {
 
 class CrashHandlerPrivate;
 class CrashHandler {

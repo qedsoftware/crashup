@@ -1,7 +1,7 @@
 #include "CrashHandler.hpp"
 #include <QtCore/QProcess>
 
-namespace crashhandler {
+namespace crash_handling {
 
 /************************************************************************/
 /* CrashHandlerPrivate                                                  */
