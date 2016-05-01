@@ -2,10 +2,11 @@
 #include "../crashup/Crashup.hpp"
 #include "WidgetTracker.hpp"
 #include <QApplication>
+#include <QDebug>
 
 int main(int argc, char *argv[]) {
   QApplication demoapp(argc, argv);
-
+  qDebug() << "QT version: " << QT_VERSION_STR;
   /* Enable printing coordinates and properties of all widgets so that
   hard-coding them in testing code can be avoided. This is only for testing
   purposes and should be turned off on release builds. */

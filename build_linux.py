@@ -59,7 +59,10 @@ def build_app():
     shutil.rmtree("build", ignore_errors=True)
     os.mkdir("build")
     os.chdir("build")
-    do_call("cmake", "../demoapp")
+    do_call(
+        "cmake", "../demoapp",
+        "-DCMAKE_PREFIX_PATH=/home/ubuntu/Qt/5.6/gcc_64/",
+    )
     do_call("make")
     os.chdir("..")
 

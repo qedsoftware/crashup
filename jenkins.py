@@ -74,6 +74,17 @@ def deploy_auto_shutdown():
     raise NotImplementedError
 
 
+def install_qt_56():
+    if fabric.contrib.files.exists('~/Qt'):
+        return
+    run("wget download.qt.io/official_releases/qt/5.6/5.6.0/qt-opensource-linux-x64-5.6.0.run")
+    run("chmod +x qt-opensource-linux-x64-5.6.0.run")
+    run(
+        "./qt-opensource-linux-x64-5.6.0.run --platform minimal "
+        "--script desktop-crashup/qt-installer-noninteractive.qs --verbose"
+    )
+
+
 def remote_build(hoststring, password):
     env.host_string = hoststring
     env.password = password
@@ -99,7 +110,8 @@ def remote_build(hoststring, password):
         if not fabric.contrib.files.exists('~/desktop-crashup'):
             run('mkdir ~/desktop-crashup')
         things_to_put = [
-            'demoapp', 'crashup', 'tests', 'build_linux.py'
+            'demoapp', 'crashup', 'tests', 'build_linux.py',
+            'qt-installer-noninteractive.qs',
         ]
         things_to_put_lazy = ['google-breakpad']
         for f in things_to_put:
@@ -107,13 +119,15 @@ def remote_build(hoststring, password):
         for f in things_to_put_lazy:
             if not fabric.contrib.files.exists('~/desktop-crashup/' + f):
                 put_tar(f, '~/desktop-crashup/')
+        install_qt_56()
         with cd('~/desktop-crashup/'):
-            run('pwd')
-            run('ls')
             if not fabric.contrib.files.exists('~/desktop-crashup/venv'):
                 run('virtualenv venv')
             with prefix('source venv/bin/activate'):
-                run('xvfb-run python build_linux.py')
+                # verbose version in case of problems:
+                # run('xvfb-run -e /dev/stdout -a python build_linux.py')
+                # '-a' to try different display number if 99 is already taken
+                run('xvfb-run -a python build_linux.py')
 
 
 def main():
