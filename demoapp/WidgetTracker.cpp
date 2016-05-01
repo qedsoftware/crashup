@@ -1,13 +1,30 @@
-#include <QDebug>
+#include <Qt>
 #include <QtGlobal>
+#include <QMetaProperty>
+#include <QMetaObject>
+#include <QString>
+#include <QDebug>
 #include <QEvent>
 #include <QHideEvent>
 #include <QChildEvent>
 #include <QMoveEvent>
-#include <QString>
-#include <QMetaProperty>
-#include <QMetaObject>
+
 #include "WidgetTracker.hpp"
+
+WidgetTracker::WidgetTracker(QApplication *a) : app(a) {
+  // use queued connection to trigger the eventLoopStartedSlot
+  // so that it is executed when the QApplication::exec starts processing events
+  // - exactly at point when we think application is initialized and ready
+  // for the testing script to be interacted with. we also then update the
+  // positions of all widgets, when we are certain they are correct
+  // (application is initialized)
+  connect(this, SIGNAL(eventLoopStartedSignal()), this,
+          SLOT(eventLoopStartedSlot()), Qt::QueuedConnection);
+  emit eventLoopStartedSignal();
+  // an entry-point where we plug in to the object tree to intercept events and
+  // report to testing script when any of widgets is moved, hidden, etc.
+  a->installEventFilter(this);
+}
 
 void WidgetTracker::printProperties(QObject *obj) {
   if (obj->objectName() == "")
@@ -82,33 +99,71 @@ void WidgetTracker::updateObjectSubtree(QObject *obj) {
   }
 }
 
+void WidgetTracker::updateAllWidgets() {
+  for (QWidget *w : all_widgets) {
+    updateObject(w);
+  }
+}
+
+void WidgetTracker::eventLoopStartedSlot() {
+  // event loop started, all windows have now correct positions
+  // so we need to notify the testing script of them
+  // because QWidget::mapToGlobal works incorrectly before
+  // main window creation!!!
+  updateAllWidgets();
+  // notify testing script that the application is ready to interact with
+  qDebug().nospace() << "WidgetTracker: "
+                     << "READY";
+}
+
+void WidgetTracker::removeObjectFromListSlot(QObject *obj) {
+  if (QWidget *w = dynamic_cast<QWidget *>(obj)) {
+    all_widgets.removeAll(w);
+  }
+}
+
 bool WidgetTracker::eventFilter(QObject *obj, QEvent *event) {
   if (QChildEvent *e = dynamic_cast<QChildEvent *>(event)) {
+    // propagate the event filter to all child objects:
     if (e->type() == QEvent::ChildAdded) {
       e->child()->installEventFilter(this);
+      if (QWidget *w = dynamic_cast<QWidget *>(e->child())) {
+        // store all widgets in order to report their positions later
+        // in function updateAllWidgets()
+        all_widgets.push_back(w);
+        // on destruction remove it from the list to avoid segfaults
+        connect(w, SIGNAL(destroyed(QObject *)), this,
+                SLOT(removeObjectFromListSlot(QObject *)),
+                Qt::DirectConnection);
+      }
     }
   }
-  if (event->type() == QEvent::Polish) {
-    updateObject(obj);
-  }
-  if (event->type() == QEvent::Show) {
-    updateObject(obj);
+  if (event->type() == QEvent::Show || event->type() == QEvent::Polish) {
+    if (QWidget *w = dynamic_cast<QWidget *>(obj)) {
+      if (w->isWindow()) {
+        // if it is a window, all the widgets need to be updated with the new
+        // coordinates (formerly they had coordinates relative to the window,
+        // when window is shown, they get coordinates relative to the screen)
+        updateAllWidgets();
+      } else {
+        updateObject(obj);
+      }
+    } else {
+      updateObject(obj);
+    }
   }
   if (QMoveEvent *e = dynamic_cast<QMoveEvent *>(event)) {
     if (QWidget *w = dynamic_cast<QWidget *>(obj))
-      if (e->type() == QEvent::Move &&
-          (e->oldPos() != e->pos() || w->isWindow())) {
-        /*
-        qDebug() << "<MOVE EVENT>";
-        qDebug() << e->oldPos();
-        qDebug() << e->pos();
-        // */
+      if (e->type() == QEvent::Move) {
+        // if widget was moved, all it's children were also moved
         updateObjectSubtree(obj);
-        // qDebug() << "</MOVE EVENT>";
       }
   }
   if (event->type() == QEvent::Hide) {
     removeObject(obj);
+  }
+  if (event->type() == QEvent::DeferredDelete) {
+    removeObjectFromListSlot(obj);
   }
   return QObject::eventFilter(obj, event);
 }

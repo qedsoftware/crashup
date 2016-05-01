@@ -12,8 +12,10 @@
 class Downloader : public QObject {
   Q_OBJECT
 
-public:
+public slots:
   void downloadFile();
+
+public:
   Downloader(QString downloadDirectory, QUrl url);
 
   // first is number of arguments, then retry periods given in miliseconds

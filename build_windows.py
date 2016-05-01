@@ -33,7 +33,8 @@ def install_requirements():
 
 def build_app():
     # http://stackoverflow.com/questions/3618721/how-to-build-google-google-breakpad-for-windows
-    shutil.rmtree("build", ignore_errors=True)
+    if os.path.exists("build"):
+        shutil.rmtree("build")
     os.mkdir("build")
     os.chdir("build")
     # the -DCMAKE_SYSTEM_VERSION=10.0 is _crucial_ when using VS 14 2015
@@ -66,7 +67,6 @@ def copy_qt_dlls():
 
 
 def run_tests():
-    raise NotImplementedError
     loader = unittest.TestLoader()
     tests = unittest.TestSuite([
         loader.discover(
@@ -80,9 +80,8 @@ def run_tests():
 
 
 if __name__ == "__main__":
-    print "CWD = " + os.getcwd()
-    print "PATH = " + os.getenv("PATH")
+    print "Building in workspace: " + os.getcwd()
     install_requirements()
     build_app()
     copy_qt_dlls()
-    #run_tests()
+    run_tests()

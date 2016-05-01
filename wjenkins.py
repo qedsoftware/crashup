@@ -10,6 +10,30 @@ windows testing machine. Sftp and scp has to be enabled, and both should point
 to "C:\Users\Administrator\Documents". Also, we treat this folder
 as our working directory. We are not using WinRM because there is no secure
 WinRM client running under linux (all send passwords in plaintext over http).
+
+Headless gui automation:
+ - login through RDP (rdesktop) and open UltraVNC settings (uvnc_settings.exe)
+ - click "install service" and "enable service" or something like this - run
+    UltraVNC server as a service
+ - set password (in ultravnc.ini there is an entry called "[ultravnc]passwd",
+    but this is NOT the password! it's hash of it or something like that)
+ - log out of RDP for UltraVNC to work properly (they are conflicting)
+ - make sure that VNC ports are open (default are 5900 for desktop clients, 5800
+    for browser-based java client)
+ - log in through VNC with the password
+ - click ctrl+alt+del and log in as Administrator
+ - stop PowerShellServer if it is already running
+ - start PowerShellServer but NOT as a windows service (as opposite to UltraVNC)
+    this is because powershellserver must be launched from VNC session not from
+    windows services because it has to have access to this VNC session's display
+ - log out - close VNC client (the session with display will remain,
+    and the tests will use it)
+ - connect through ssh to powershellserver and launch tests from it
+https://github.com/kybu/headless-selenium-for-win  <----  desktop_utils.exe
+Probably far better way of doing it, however, I came across it when the former
+approach was almost done. Also, this code is not tested well so it likely would
+require similar amount of time to get it working. Just for the future, this
+sounds like more elegant and less hacky way of doing gui automation on windows.
 """
 import os
 import unittest
@@ -139,6 +163,26 @@ if(!(Test-Path "C:\Program Files (x86)\Windows Kits\10")) {
 }
     ''' % (winsdk_url, winsdk_dest, winsdk_dest)
     commands += install_winsdk
+    
+    ultravnc_url = "http://www.uvnc.com/component/jdownloads/finish/4-setup/291-ultravnc-1210-x64-setup/0.html"
+    ultravnc_dest = "C:\Users\Administrator\Documents\ultravnc_setup.exe"
+    install_ultravnc = r'''
+if(!(Test-Path "C:\Program Files\UltraVNC")) {
+    $url = "%s"
+    $output = "%s"
+    $start_time = Get-Date
+    Write-Output "Downloading UltraVNC..."
+    (New-Object System.Net.WebClient).DownloadFile($url, $output)
+    $time = (Get-Date).Subtract($start_time).Seconds
+    Write-Output "Download completed after $time second(s)"
+    Write-Output "Installing UltraVNC..."
+    Start-Process "%s" -ArgumentList '/DIR="C:\Program Files\UltraVNC"',"/SILENT",'/TYPE="UltraVNC Server Only"',"/LOG" -Wait
+    Write-Output "UltraVNC installed"
+} else {
+    Write-Output "UltraVNC already installed"
+}
+    ''' % (ultravnc_url, ultravnc_dest, ultravnc_dest)
+    commands += install_ultravnc
 
     with hide('running'):
         run(commands)
@@ -172,6 +216,15 @@ if(!($Env:Path -like ("*" + $paths + "*"))) {
     Write-Output "MSBuild executables already present in Env:Path"
 }
 '''
+    cmd += r'''
+$paths = "C:\Program Files\UltraVNC"
+if(!($Env:Path -like ("*" + $paths + "*"))) {
+Write-Output "Adjusting Env:Path to contain UltraVNC executables..."
+$Env:Path = $Env:Path + ";" + $paths
+} else {
+Write-Output "UltraVNC executables already present in Env:Path"
+}
+'''
     with hide('running'):
         run(cmd)
 
@@ -197,6 +250,8 @@ def remote_file_exists(path):
         # len(out) == 32 and if you iterate through it, you will get about 30
         # bytes of garbage at the beginning and the 2 letters 'N' and 'o' at the
         # end.
+        # THIS BEHAVIOR WAS OBSERVED WHEN USING FABRIC PSEUDOTERMINAL SETTING
+        # (WHICH IS DEFAULT ONE), NOW WE SWITCHED IT OFF, MAYBE THIS HELPED
         res = ""
         cnt = 0
         for i in out:
@@ -302,6 +357,17 @@ def send_files():
         'common.gypi', zipname='common.gypi',
         remote_path='C:\Users\Administrator\Documents\desktop-crashup\google-breakpad\src\\build'
     )
+
+
+def run_winvnc_service():
+    # this function ended up not being used as everything needs to be done
+    # manually nevertheless
+    cmd = '''
+    Write-Output "Running UltraVNC service..."
+    Start-Process "C:\Program Files\UltraVNC\winvnc.exe" -ArgumentList '-service' # don't -Wait
+    '''
+    with hide('running'):
+        run(cmd)
 
 
 def remote_build(hoststring, password):

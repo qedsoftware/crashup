@@ -4,15 +4,14 @@
 #include <QApplication>
 #include <QDebug>
 #include <QString>
+#include <Qt>
 
 int main(int argc, char *argv[]) {
   QApplication demoapp(argc, argv);
-  qDebug() << "QT version: " << QT_VERSION_STR;
   /* Enable printing coordinates and properties of all widgets so that
   hard-coding them in testing code can be avoided. This is only for testing
   purposes and should be turned off on release builds. */
-  WidgetTracker tracker;
-  demoapp.installEventFilter(&tracker);
+  WidgetTracker wt(&demoapp);
 
   /* just for the testing, generally these strings should be given my the user
    */
@@ -45,6 +44,6 @@ int main(int argc, char *argv[]) {
       },
       [&]() { crashup.uploadPendingMinidumps(); });
   w.show();
-
+  w.activateWindow();
   return demoapp.exec();
 }
