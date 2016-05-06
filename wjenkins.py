@@ -108,19 +108,33 @@ if(!(Test-Path "C:\Python27\python.exe")) {
 if(!(Test-Path "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC")) {
     $url = "%s"
     $output = "C:\Users\Administrator\Documents\%s"
-    Write-Output "Downloading Visual Studio..."
+    Write-Output "Downloading Visual Studio 2015..."
     (New-Object System.Net.WebClient).DownloadFile($url, $output)
     Write-Output "Download completed"
-    Write-Output "Installing Visual Studio... (this may take a few hours)"
-    $start_time = Get-Date
-    Start-Process "%s" -ArgumentList "/quiet","/installselectableitems","NativeLanguageSupport_Group;CommonTools_Group" -Wait
-    $time = (Get-Date).Subtract($start_time).Seconds
-    Write-Output "Visual Studio installed after $time second(s)"
+    Write-Output "You have to install Visual Studio 2015 (including Visual C++), installation file: C:\Users\Administrator\Documents\%s"
+    Exit 1
 } else {
-    Write-Output "Visual Studio already installed"
+    Write-Output "Visual Studio 2015 already installed"
 }
     ''' % (vstudio_url, vstudio_dest, vstudio_dest)
     commands += install_vstudio
+
+    vstudio2013_url = " http://download.microsoft.com/download/A/A/D/AAD1AA11-FF9A-4B3C-8601-054E89260B78/vs_community.exe"
+    vstudio2013_dest = "vs2013_community.exe"
+    install_vstudio2013 = r'''
+if(!(Test-Path "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC")) {
+    $url = "%s"
+    $output = "C:\Users\Administrator\Documents\%s"
+    Write-Output "Downloading Visual Studio 2013..."
+    (New-Object System.Net.WebClient).DownloadFile($url, $output)
+    Write-Output "Download completed"
+    Write-Output "You have to install Visual Studio 2013 (including Visual C++), installation file: C:\Users\Administrator\Documents\%s"
+    Exit 1
+} else {
+    Write-Output "Visual Studio 2013 already installed"
+}
+    ''' % (vstudio2013_url, vstudio2013_dest, vstudio2013_dest)
+    commands += install_vstudio2013
 
     # FIXME FIXME FIXME: add unattended Qt install script according to these
     # instructions: https://doc.qt.io/qtinstallerframework/noninteractive.html
