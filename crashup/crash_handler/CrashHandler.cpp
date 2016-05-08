@@ -1,6 +1,12 @@
 #include "CrashHandler.hpp"
 #include <QtCore/QProcess>
 
+#if defined(Q_OS_LINUX)
+#include "client/linux/handler/exception_handler.h"
+#elif defined(Q_OS_WIN32)
+#include "client/windows/handler/exception_handler.h"
+#endif
+
 namespace crash_handling {
 
 /************************************************************************/
@@ -11,8 +17,8 @@ public:
   static google_breakpad::ExceptionHandler *pHandler;
   static bool bReportCrashesToSystem;
 
-  CrashHandlerPrivate() { pHandler = NULL; }
-  ~CrashHandlerPrivate() { delete pHandler; }
+  CrashHandlerPrivate() {}
+  ~CrashHandlerPrivate() {}
 
   void initCrashHandlerPrivate(const std::string &report_minidumps_dirpath);
 };
@@ -64,8 +70,10 @@ bool dumpCallback(const char *_dump_dir, const char *_minidump_id,
 void CrashHandlerPrivate::initCrashHandlerPrivate(
     const std::string &report_minidumps_dirpath) {
 
-  if (pHandler != nullptr)
+  if (pHandler != nullptr) {
+    qWarning("The Google Breakpad ExceptionHandler is already initialized.");
     return;
+  }
 
 #if defined(Q_OS_WIN32)
   std::wstring pathAsStr(report_minidumps_dirpath.begin(),

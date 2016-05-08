@@ -4,12 +4,6 @@
 #include <string>
 #include <QCoreApplication>
 
-#if defined(Q_OS_LINUX)
-#include "client/linux/handler/exception_handler.h"
-#elif defined(Q_OS_WIN32)
-#include "client/windows/handler/exception_handler.h"
-#endif
-
 namespace crash_handling {
 
 class CrashHandlerPrivate;
