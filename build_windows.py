@@ -44,8 +44,8 @@ def build_app():
     # Win64 also is important here because we have only 64-bit version of Qt installed by now
     do_call(
         "cmake", "../demoapp",
-        "-G", "Visual Studio 14 2015 Win64", "-DCMAKE_SYSTEM_VERSION=10.0",
-        "-DCMAKE_PREFIX_PATH=C:\\Qt\\Qt5.6.0\\5.6\\msvc2015_64\\",
+        "-G", "Visual Studio 12 2013 Win64", #"-DCMAKE_SYSTEM_VERSION=10.0",
+        "-DCMAKE_PREFIX_PATH=C:\\Qt\\Qt5.6.0\\5.6\\msvc2013_64\\",
     )
     do_call("cmake", "--build", os.getcwd(), "--config", "Debug")
     os.chdir("..")
@@ -61,7 +61,7 @@ def copy_qt_dlls():
     '''.split()
     for f in dlls:
         shutil.copy2(
-            "C:\Qt\Qt5.6.0\\5.6\msvc2015_64\\bin\\" + f,
+            "C:\Qt\Qt5.6.0\\5.6\msvc2013_64\\bin\\" + f,
             "C:\Users\Administrator\Documents\desktop-crashup\\build\Debug\\"
         )
 

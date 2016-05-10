@@ -890,7 +890,8 @@
         ],
         'msvs_system_include_dirs': [
           '<(DEPTH)/third_party/platformsdk_win7/files/Include',
-          'C:\Program Files (x86)\Windows Kits\\10\Include\\10.0.10586.0\ucrt',
+          # 'C:\Program Files (x86)\Windows Kits\\10\Include\\10.0.10586.0\ucrt',
+          '$(VSInstallDir)/VC/include',
           '$(VSInstallDir)/VC/atlmfc/include',
         ],
         'msvs_cygwin_dirs': ['<(DEPTH)/third_party/cygwin'],
@@ -917,9 +918,9 @@
             'AdditionalOptions': ['/ignore:4221'],
             'AdditionalLibraryDirectories':
               ['<(DEPTH)/third_party/platformsdk_win7/files/Lib',
-              'C:\\Program Files (x86)\\Windows Kits\\10\\Lib\\10.0.10586.0\\ucrt\\x64',
-              #'C:\\Program Files (x86)\\Windows Kits\\10\\Lib\\10.0.10586.0\\ucrt',
-              #'C:\\Program Files (x86)\\Windows Kits\\10\\Lib'
+              #'C:\\Program Files (x86)\\Windows Kits\\10\\Lib\\10.0.10586.0\\ucrt\\x64',
+              ##'C:\\Program Files (x86)\\Windows Kits\\10\\Lib\\10.0.10586.0\\ucrt',
+              ##'C:\\Program Files (x86)\\Windows Kits\\10\\Lib'
               ],
           },
           'VCLinkerTool': {
@@ -934,9 +935,9 @@
             ],
             'AdditionalLibraryDirectories':
               ['<(DEPTH)/third_party/platformsdk_win7/files/Lib',
-              'C:\\Program Files (x86)\\Windows Kits\\10\\Lib\\10.0.10586.0\\ucrt\\x64',
-              #'C:\\Program Files (x86)\\Windows Kits\\10\\Lib\\10.0.10586.0\\ucrt
-              #'C:\\Program Files (x86)\\Windows Kits\\10\\Lib'
+              #'C:\\Program Files (x86)\\Windows Kits\\10\\Lib\\10.0.10586.0\\ucrt\\x64',
+              ##'C:\\Program Files (x86)\\Windows Kits\\10\\Lib\\10.0.10586.0\\ucrt
+              ##'C:\\Program Files (x86)\\Windows Kits\\10\\Lib'
               ],
             'GenerateDebugInformation': 'true',
             'MapFileName': '$(OutDir)\\$(TargetName).map',

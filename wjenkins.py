@@ -327,8 +327,9 @@ def compile_google_breakpad():
     Write-Output "Compiling google breakpad..."
     $Env:GYP_MSVS_VERSION = "2013"
     %s\src\tools\gyp\gyp.bat --no-circular-check %s\src\client\windows\breakpad_client.gyp
-    msbuild %s\src\client\windows\breakpad_client.sln /p:PlatformToolset=v140 /p:VisualStudioVersion=14.0 /ToolsVersion:14.0 /p:Platform="x64"
-    ''' % (pref, pref, pref)
+    # msbuild %s\src\client\windows\breakpad_client.sln /p:PlatformToolset=v140 /p:VisualStudioVersion=14.0 /ToolsVersion:14.0 /p:Platform="x64"
+    msbuild %s\src\client\windows\breakpad_client.sln /p:PlatformToolset=v120 /p:VisualStudioVersion=12.0 /p:Platform="x64"
+    ''' % (pref, pref, pref, pref)
     with hide('running'):
         run(cmd)
 
