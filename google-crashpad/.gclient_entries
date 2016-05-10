@@ -1,0 +1,10 @@
+entries = {
+  'crashpad': 'https://chromium.googlesource.com/crashpad/crashpad',
+  'buildtools': 'https://chromium.googlesource.com/chromium/buildtools.git@c2f259809d5ede3275df5ea0842f0431990c4f98',
+  'crashpad/third_party/gtest/gtest': 'https://chromium.googlesource.com/external/github.com/google/googletest@786564fa4a3c8e0f908acca32cce481de5481b9f',
+  'crashpad/third_party/gyp/gyp': 'https://chromium.googlesource.com/external/gyp@01528c7244837168a1c80f06ff60fa5a9793c824',
+  'crashpad/third_party/mini_chromium/mini_chromium': 'https://chromium.googlesource.com/chromium/mini_chromium@964ee49aa24e8bfb4823cd9034a3b32ec3cb09e9',
+  'buildtools/clang_format/script': 'https://chromium.googlesource.com/chromium/llvm-project/cfe/tools/clang-format.git@81edd558fea5dd7855d67a1dc61db34ae8c1fd63',
+  'buildtools/third_party/libc++/trunk': 'https://chromium.googlesource.com/chromium/llvm-project/libcxx.git@48198f9110397fff47fe7c37cbfa296be7d44d3d',
+  'buildtools/third_party/libc++abi/trunk': 'https://chromium.googlesource.com/chromium/llvm-project/libcxxabi.git@4ad1009ab3a59fa7a6896d74d5e4de5885697f95',
+}
