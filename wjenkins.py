@@ -96,6 +96,7 @@ if(!(Test-Path "C:\Python27\python.exe")) {
     ''' % (python_url, python_dest, python_dest)
     commands += install_python
 
+
     # FIXME FIXME FIXME: this is done now that it will first time install the
     # visual studio and then hang, and second time it will succeed saying
     # that VS is already installed. FIX: TODO: this should launch the installer
@@ -135,25 +136,49 @@ if(!(Test-Path "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC")) {
 }
     ''' % (vstudio2013_url, vstudio2013_dest, vstudio2013_dest)
     commands += install_vstudio2013
-
+    # no longer need Qt for VS 14.0 2015
+    """
     # FIXME FIXME FIXME: add unattended Qt install script according to these
     # instructions: https://doc.qt.io/qtinstallerframework/noninteractive.html
     qt_url = "http://download.qt.io/official_releases/qt/5.6/5.6.0/qt-opensource-windows-x86-msvc2015_64-5.6.0.exe"
     qt_dest = "C:\Users\Administrator\Documents\qtsetup.exe"
     install_qt = r'''
-if(!(Test-Path "C:\Qt\Qt5.6.0")) {
+if(!(Test-Path "C:\Qt\Qt5.6.0\5.6\msvc2015_64")) {
     $url = "%s"
     $output = "%s"
     $start_time = Get-Date
-    Write-Output "Downloading Qt..."
+    Write-Output "Downloading Qt (for VS 14.0 2015)..."
     (New-Object System.Net.WebClient).DownloadFile($url, $output)
     $time = (Get-Date).Subtract($start_time).Seconds
     Write-Output "Download completed after $time second(s)"
-    Write-Output "Installing Qt..."
+    Write-Output "Installing Qt (for VS 14.0 2015)..."
     Start-Process "%s" -Wait
-    Write-Output "Qt installed"
+    Write-Output "Qt (for VS 14.0 2015) installed"
 } else {
-    Write-Output "Qt already installed"
+    Write-Output "Qt (for VS 14.0 2015) already installed"
+}
+    ''' % (qt_url, qt_dest, qt_dest)
+    commands += install_qt
+    """
+
+    # FIXME FIXME FIXME: add unattended Qt install script according to these
+    # instructions: https://doc.qt.io/qtinstallerframework/noninteractive.html
+    qt_url = "http://download.qt.io/official_releases/qt/5.6/5.6.0/qt-opensource-windows-x86-msvc2013_64-5.6.0.exe"
+    qt_dest = "C:\Users\Administrator\Documents\qtsetup_vs2013.exe"
+    install_qt = r'''
+if(!(Test-Path "C:\Qt\Qt5.6.0\5.6\msvc2013_64")) {
+    $url = "%s"
+    $output = "%s"
+    $start_time = Get-Date
+    Write-Output "Downloading Qt (for VS 12.0 2013)..."
+    (New-Object System.Net.WebClient).DownloadFile($url, $output)
+    $time = (Get-Date).Subtract($start_time).Seconds
+    Write-Output "Download completed after $time second(s)"
+    Write-Output "Installing Qt (for VS 12.0 2013)..."
+    Start-Process "%s" -Wait
+    Write-Output "Qt (for VS 12.0 2013) installed"
+} else {
+    Write-Output "Qt (for VS 12.0 2013) already installed"
 }
     ''' % (qt_url, qt_dest, qt_dest)
     commands += install_qt
@@ -203,42 +228,66 @@ if(!(Test-Path "C:\Program Files\UltraVNC")) {
 
 
 def adjust_env():
+    """Set the $Env:PATH (%Path% environment variable) so that all installed
+    binaries are visible. If you have any problems with them (or want to undo
+    adding something to $Env:PATH), read the below explanation to understand
+    how they work with PSServer*.
+    * - PSServer = PowerShellServer
+    Environment variables:
+        It turned out that if PSServer runs not as a windows service (we
+        haven't tested running as windows service) then the $Env is presisted
+        between logins. Even if you click "restart" in PSServer GUI, it still
+        retains it. The way of resetting them that works is to kill the PSServer
+        background process from the windows task manager and then start the
+        server. This way you can reset environment variables in PSServer.
+    Useful link explaining how env vars on windows work:
+    http://windowsitpro.com/powershell/take-charge-environment-variables-powershell
+    """
     cmd = r'''
 $paths = "C:\Python27;C:\Python27\Scripts;C:\Program Files (x86)\CMake\bin"
 if(!($Env:Path -like ("*" + $paths + "*"))) {
     Write-Output "Adjusting Env:Path to contain CMake and Python executables..."
     $Env:Path = $Env:Path + ";" + $paths
 } else {
-    "CMake and Python already present in Env:Path"
+    Write-Output "CMake and Python already present in Env:Path"
 }
     '''
     cmd += r'''
-$paths = "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin;C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC"
+$paths = "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin;C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC"
 if(!($Env:Path -like ("*" + $paths + "*"))) {
     Write-Output "Adjusting Env:Path to contain Visual C++ executables..."
     $Env:Path = $Env:Path + ";" + $paths
 } else {
-"Visual C++ executables already present in Env:Path"
+    Write-Output "Visual C++ executables already present in Env:Path"
 }
-'''
+    '''
     cmd += r'''
-$paths = "C:\Program Files (x86)\MSBuild\14.0\Bin"
+$paths = "C:\Program Files (x86)\MSBuild\12.0\Bin"
 if(!($Env:Path -like ("*" + $paths + "*"))) {
     Write-Output "Adjusting Env:Path to contain MSBuild executables..."
     $Env:Path = $Env:Path + ";" + $paths
 } else {
     Write-Output "MSBuild executables already present in Env:Path"
 }
-'''
+    '''
     cmd += r'''
 $paths = "C:\Program Files\UltraVNC"
 if(!($Env:Path -like ("*" + $paths + "*"))) {
-Write-Output "Adjusting Env:Path to contain UltraVNC executables..."
-$Env:Path = $Env:Path + ";" + $paths
+    Write-Output "Adjusting Env:Path to contain UltraVNC executables..."
+    $Env:Path = $Env:Path + ";" + $paths
 } else {
-Write-Output "UltraVNC executables already present in Env:Path"
+    Write-Output "UltraVNC executables already present in Env:Path"
 }
-'''
+    '''
+    cmd += r'''
+$paths = "C:\Users\Administrator\Documents\desktop-crashup\google-crashpad\depot_tools"
+if(!($Env:Path -like ("*" + $paths + "*"))) {
+    Write-Output "Adjusting Env:Path to contain chromium depot_tools..."
+    $Env:Path = $Env:Path + ";" + $paths
+} else {
+    Write-Output "depot_tools already present in Env:Path"
+}
+    '''
     with hide('running'):
         run(cmd)
 
@@ -350,6 +399,26 @@ https://bugs.chromium.org/p/google-breakpad/issues/detail?id=669
 '''
 
 
+def compile_crashpad():
+    pref = "C:\Users\Administrator\Documents\desktop-crashup\google-crashpad\crashpad"
+    cmd = r'''
+    cd desktop-crashup\google-crashpad\crashpad
+    if(!(Test-Path "C:\Users\Administrator\Documents\desktop-crashup\google-crashpad\crashpad\out\Debug\crashpad_handler.exe")) {
+        $Env:GYP_MSVS_VERSION = "2013"
+        Write-Output "Generating Crashpad build files with GYP..."
+        python build\gyp_crashpad.py crashpad.gyp
+        Write-Output "Compling Crashpad (this may take long)..."
+        ninja -C out/Debug
+        python build\run_tests.py Debug
+    } else {
+        Write-Output "Crashpad already compiled."
+    }
+    cd ..\..
+    ''' # % (pref, pref, pref, pref)
+    with hide('running'):
+        run(cmd)
+
+
 def send_files():
     with hide('output'):
         run('md -Force C:\Users\Administrator\Documents\desktop-crashup')
@@ -366,7 +435,15 @@ def send_files():
         )
     else:
         print INDENT + "google-breakpad already present on remote host"
-    
+
+    if not remote_file_exists('C:\Users\Administrator\Documents\desktop-crashup\google-crashpad'):
+        print INDENT + "Sending google-crashpad to remote host..."
+        put_files(
+            'google-crashpad', zipname='google-crashpad',remote_path='C:\Users\Administrator\Documents\desktop-crashup'
+        )
+    else:
+        print INDENT + "google-crashpad already present on remote host"
+
     print INDENT + "Sending gyp config file to remote host..."
     put_files(
         'common.gypi', zipname='common.gypi',
@@ -394,8 +471,9 @@ def remote_build(hoststring, password):
     env.always_use_pty = False  # to prevent truncating lines by the server
     with show('exceptions'):
         install_dependencies()
-        adjust_env()
         send_files()
+        adjust_env()
+        compile_crashpad()
         # TODO compile only when not present!
         compile_google_breakpad()
         cmd = '''
