@@ -20,7 +20,10 @@ void CrashingWidget::on_exceptionButton_clicked() {
   e->raise();
 }
 
-void CrashingWidget::on_segfaultButton_clicked() { ::raise(SIGSEGV); }
+void CrashingWidget::on_segfaultButton_clicked() {
+  int *invalid_address = (int *)7;
+  *invalid_address = 42;
+}
 
 void CrashingWidget::on_statsButton_clicked() {
   logEvent("sample_event", ui->textEdit->toPlainText().toStdString());

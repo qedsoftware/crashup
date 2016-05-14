@@ -2,6 +2,8 @@
 #include <QDir>
 #include <QString>
 #include <QDebug>
+#include <iostream>
+#include <cstdlib>
 
 namespace crashup {
 
@@ -14,6 +16,9 @@ Crashup::Crashup(std::string working_dir, std::string server_address)
   this->server_address = server_address;
   this->_crashHandler = nullptr;
   this->_crashUploader = nullptr;
+#if defined(Q_OS_WIN32)
+  this->_crashpad_client = nullptr;
+#endif
 }
 
 Stats &Crashup::stats() { return _stats; }
@@ -39,7 +44,25 @@ bool Crashup::checkRelativeDirpath(std::string &dirpath) {
 }
 
 void Crashup::initCrashHandler() {
-
+#if defined(Q_OS_WIN32)
+  this->_crashpad_client = new crashpad::CrashpadClient();
+  const std::wstring handler(L"C:\\Users\\Administrator\\Documents\\desktop-"
+                             L"crashup\\google-crashpad\\crashpad\\out\\Debug_"
+                             L"x64\\crashpad_handler.exe");
+  const std::wstring crashdb(L".\\crashdb");
+  int res = _crashpad_client->StartHandler(
+      base::FilePath(handler), base::FilePath(crashdb), "",
+      std::map<std::string, std::string>(), std::vector<std::string>(), false);
+  if (!res) {
+    std::cerr << "StartHandler" << std::endl;
+    exit(1);
+  }
+  res = _crashpad_client->UseHandler();
+  if (!res) {
+    std::cerr << "UseHandler" << std::endl;
+    exit(1);
+  }
+#elif defined(Q_OS_LINUX)
   std::string report_minidumps_absolute_dirpath =
       Crashup::report_minidumps_relative_path;
   if (checkRelativeDirpath(report_minidumps_absolute_dirpath)) {
@@ -48,11 +71,6 @@ void Crashup::initCrashHandler() {
   } else {
     throw CrashupInitMinidumpDirpathException();
   }
-
-//#if defined(Q_OS_WIN32)
-//  throw TODOException("Crashup::initCrashHandler -- no OS_WIN support")
-//#elif defined(Q_OS_LINUX)
-#if 1
   this->_crashHandler = crash_handling::CrashHandler::instance();
   this->_crashHandler->init(report_minidumps_absolute_dirpath);
 // this->_crashHandler->setReportCrashesToSystem(true);			/* false

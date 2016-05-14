@@ -1,10 +1,16 @@
 #pragma once
 #include <string>
+#include <map>
+#include <vector>
 #include "updates/Updates.hpp"
 #include "stats/Stats.hpp"
 #include "SettingsWidget.hpp"
 #include "crash_handler/CrashHandler.hpp"
 #include "crash_handler/CrashUploader.hpp"
+#if defined(Q_OS_WIN32)
+#include "../../google-crashpad/crashpad/client/crashpad_client.h"
+#include "../../google-crashpad/crashpad/third_party/mini_chromium/mini_chromium/base/files/file_path.h"
+#endif
 #include <QtCore/QProcess>
 #include "exceptions.hpp"
 
@@ -16,6 +22,9 @@ private:
   std::string working_dir, server_address;
   std::string report_minidumps_dirpath;
   Stats _stats;
+#if defined(Q_OS_WIN32)
+  crashpad::CrashpadClient *_crashpad_client;
+#endif
   crash_handling::CrashHandler *_crashHandler;
   crash_handling::CrashUploader *_crashUploader;
   static const std::string report_minidumps_relative_path;

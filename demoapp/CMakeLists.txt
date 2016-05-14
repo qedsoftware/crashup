@@ -36,6 +36,13 @@ target_link_libraries (WidgetTracker Qt5::Widgets)
 set(DESKTOP_CRASHUP_PATH ${CMAKE_CURRENT_LIST_DIR}/../)
 
 ############################################################################
+### path to google crashpad  ###############################################
+############################################################################
+set(CRASHPAD_PATH ${DESKTOP_CRASHUP_PATH}google-crashpad/crashpad/)
+include_directories(${CRASHPAD_PATH})
+include_directories(${CRASHPAD_PATH}/third_party/mini_chromium/mini_chromium/)
+
+############################################################################
 ### set path to the /src/ directory in your google-breakpad installation ###
 ### + include this directory ###############################################
 ############################################################################
@@ -80,6 +87,23 @@ if (MSVC)
 else ()
     target_link_libraries (CrashHandler ${BREAKPAD_SRC_PATH}/client/linux/libbreakpad_client.a)
 endif ()
+
+############################################################################
+### crashpad static client library #########################################
+############################################################################
+if (MSVC)
+    target_link_libraries (Crashup ${CRASHPAD_PATH}out/Debug_x64/obj/handler/crashpad_handler_lib.lib)
+    target_link_libraries (Crashup ${CRASHPAD_PATH}out/Debug_x64/obj/minidump/crashpad_minidump.lib)
+    target_link_libraries (Crashup ${CRASHPAD_PATH}out/Debug_x64/obj/snapshot/crashpad_snapshot_api.lib)
+    target_link_libraries (Crashup ${CRASHPAD_PATH}out/Debug_x64/obj/snapshot/crashpad_snapshot.lib)
+    target_link_libraries (Crashup ${CRASHPAD_PATH}out/Debug_x64/obj/util/crashpad_util.lib)
+    target_link_libraries (Crashup ${CRASHPAD_PATH}out/Debug_x64/obj/client/crashpad_client.lib)
+    target_link_libraries (Crashup ${CRASHPAD_PATH}out/Debug_x64/obj/tools/crashpad_tool_support.lib)
+    target_link_libraries (Crashup ${CRASHPAD_PATH}out/Debug_x64/obj/compat/crashpad_compat.lib)
+    target_link_libraries (Crashup ${CRASHPAD_PATH}out/Debug_x64/obj/third_party/getopt/getopt.lib)
+    target_link_libraries (Crashup ${CRASHPAD_PATH}out/Debug_x64/obj/third_party/mini_chromium/mini_chromium/base/base.lib)
+endif ()
+
 target_link_libraries (CrashHandler Qt5::Core)
 target_link_libraries (CrashHandler ${CMAKE_THREAD_LIBS_INIT})
 
