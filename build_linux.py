@@ -37,6 +37,10 @@ def install_requirements():
         import pyautogui
     except:
         do_call("pip", "install", "pyautogui")
+    try:
+        import fabric
+    except:
+        do_call("pip", "install", "fabric")
 
 
 def run_clang_format():

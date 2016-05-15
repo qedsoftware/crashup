@@ -8,9 +8,15 @@ import sys
 import shutil
 import os
 import functools
+import time
 
 from .widget_tracker import WidgetTracker
+if (not sys.platform.startswith('win')):
+    from fabric.api import env, run, cd, sudo
+    from fabric.contrib.files import exists
 
+DEFAULT_HOSTSTRING = "root@ec2-52-91-29-60.compute-1.amazonaws.com"
+DEFAULT_PASSWORD = "Amp,aOmk"
 
 def runapp():
     if sys.platform.startswith('linux'):
@@ -38,3 +44,34 @@ def cleanup_minidumps(func):
                 shutil.rmtree("minidumps")
         return res
     return newfunc
+
+
+def check_if_minidump_upload_succeeded(self, remote_filename):
+    hoststring = os.getenv('CRASHUP_TEST_HOSTSTRING', DEFAULT_HOSTSTRING)
+    password = os.getenv('CRASHUP_TEST_PASSWORD', DEFAULT_PASSWORD)
+
+    env.host_string = hoststring
+    env.password = password
+    env.abort_on_prompts = True
+    env.reject_unknown_hosts = False
+
+    date_foldername = time.strftime("%Y%m%d")
+    with cd("/home/socorro/crashes/"):
+        res = remote_filename.split("/")
+        self.assertTrue(exists(date_foldername+"/name/"+remote_filename+".dump", use_sudo=True))
+        self.assertTrue(exists(date_foldername+"/name/"+remote_filename+".json", use_sudo=True))
+        # file removing, with their corresponding directory if it does not contain anything else
+        sudo("rm -f "+date_foldername+"/name/"+remote_filename+".dump")
+        self.assertFalse(exists(date_foldername+"/name/"+remote_filename+".dump", use_sudo=True))
+        sudo("rm -f "+date_foldername+"/name/"+remote_filename+".json")
+        self.assertFalse(exists(date_foldername+"/name/"+remote_filename+".json", use_sudo=True))
+
+        # checking for regular files or directories to avoid finding occasional broken symlinks
+        if (len(run("find ./"+date_foldername+"/name/"+res[0]+"/"+res[1]+"/ -type f || -type d")) == 0):
+            sudo("rm -rf "+date_foldername+"/name/"+res[0]+"/"+res[1]+"/")
+        if (len(run("find ./"+date_foldername+"/name/"+res[0]+"/ -type f || -type d")) == 0):
+            sudo("rm -rf "+date_foldername+"/name/"+res[0]+"/")
+        if (len(run("find ./"+date_foldername+"/name/ -type f || -type d")) == 0):
+            sudo("rm -rf "+date_foldername+"/")
+
+
