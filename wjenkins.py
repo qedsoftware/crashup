@@ -49,182 +49,128 @@ from fabric.api import env, show, hide, run, put, local, cd, settings
 
 DEFAULT_HOSTSTRING = "Administrator@54.84.41.90"
 
-
 def install_dependencies():
     # install cmake, qt, python, pip, etc.
     # how to download file using powershell:
     # http://superuser.com/questions/25538/how-to-download-files-from-command-line-in-windows-like-wget-is-doing/755581
     # cmake: https://cmake.org/download/
     commands = ""
+    commands += install_cmake()
+    commands += install_python()
+    commands += install_vstudio2015()
+    commands += install_vstudio2013()
+    #commands += install_qt_for_vstudio2015()
+    commands += install_qt_for_vstudio2013()
+    commands += install_winsdk()
+    commands += install_ultravnc()
+    
+    with hide('running'):
+        run(commands)
+
+def install_dependency(url, dest, name, path, options):
+    cmd = r'''
+if(!(Test-Path "%s")) {
+    $url = "%s"
+    $output = "%s"
+    $start_time = Get-Date
+    Write-Output "Downloading %s..."
+    (New-Object System.Net.WebClient).DownloadFile($url, $output)
+    $time = (Get-Date).Subtract($start_time).Seconds
+    Write-Output "Download completed after $time second(s)"
+    Write-Output "Installing %s..."
+    Start-Process "%s" %s -Wait
+    Write-Output "%s installed"
+} else {
+    Write-Output "%s already installed"
+}
+    ''' % (path, url, dest, name, name, dest, options, name, name)
+    return cmd
+
+def install_cmake():
     cmake_url = "https://cmake.org/files/v3.5/cmake-3.5.1-win32-x86.msi"
     cmake_dest = "C:\Users\Administrator\Documents\cmake.msi"
-    install_cmake = r'''
-if(!(Test-Path "C:\Program Files (x86)\CMake\bin")) {
-    $url = "%s"
-    $output = "%s"
-    $start_time = Get-Date
-    Write-Output "Downloading CMake..."
-    (New-Object System.Net.WebClient).DownloadFile($url, $output)
-    $time = (Get-Date).Subtract($start_time).Seconds
-    Write-Output "Download completed after $time second(s)"
-    Write-Output "Installing CMake..."
-    Start-Process "%s" /qn -Wait
-    Write-Output "CMake installed"
-} else {
-    Write-Output "CMake already installed"
-}
-    ''' % (cmake_url, cmake_dest, cmake_dest)
-    commands += install_cmake
+    cmake_path = r'''C:\Program Files (x86)\CMake\bin'''
+    cmake_name = "CMake"
+    cmake_options = "/qn "
+    return install_dependency(cmake_url, cmake_dest, cmake_name, cmake_path, cmake_options)
 
+def install_python():
     python_url = "https://www.python.org/ftp/python/2.7.11/python-2.7.11.msi"
     python_dest = "C:\Users\Administrator\Documents\python.msi"
-    install_python = r'''
-if(!(Test-Path "C:\Python27\python.exe")) {
-    $url = "%s"
-    $output = "%s"
-    $start_time = Get-Date
-    Write-Output "Downloading Python..."
-    (New-Object System.Net.WebClient).DownloadFile($url, $output)
-    $time = (Get-Date).Subtract($start_time).Seconds
-    Write-Output "Download completed after $time second(s)"
-    Write-Output "Installing Python..."
-    Start-Process "%s" /qn -Wait
-    Write-Output "Python installed"
-} else {
-    Write-Output "Python already installed"
-}
-    ''' % (python_url, python_dest, python_dest)
-    commands += install_python
+    python_path = "C:\Python27\python.exe"
+    python_name = "Python"
+    python_options = "/qn "
+    return install_dependency(python_url, python_dest, python_name, python_path, python_options)
 
+def install_qt_for_vstudio2015():
+    qt_url = "http://download.qt.io/official_releases/qt/5.6/5.6.0/qt-opensource-windows-x86-msvc2015_64-5.6.0.exe"
+    qt_dest = "C:\Users\Administrator\Documents\qtsetup.exe"
+    qt_path = "C:\Qt\Qt5.6.0\\5.6\msvc2015_64"
+    qt_name = "Qt (for VS 14.0 2015)"
+    qt_options = ""
+    return install_dependency(qt_url, qt_dest, qt_name, qt_path, qt_options)
 
-    # FIXME FIXME FIXME: this is done now that it will first time install the
-    # visual studio and then hang, and second time it will succeed saying
-    # that VS is already installed. FIX: TODO: this should launch the installer
-    # in the background and poll for the required folder to exist, then proceed
-    # to next steps.
-    # http://timsneath.com/visual-studio-2015-installation-options/
+def install_qt_for_vstudio2013():
+    qt_url = "http://download.qt.io/official_releases/qt/5.6/5.6.0/qt-opensource-windows-x86-msvc2013_64-5.6.0.exe"
+    qt_dest = "C:\Users\Administrator\Documents\qtsetup_vs2013.exe"
+    qt_path = "C:\Qt\Qt5.6.0\\5.6\msvc2013_64"
+    qt_name = "Qt (for VS 12.0 2013)"
+    qt_options = ""
+    return install_dependency(qt_url, qt_dest, qt_name, qt_path, qt_options)
+
+def install_winsdk():
+    winsdk_url = "http://download.microsoft.com/download/6/A/2/6A2ECE81-C934-4E47-91CC-52DA00A65345/sdksetup.exe"
+    winsdk_dest = "C:\Users\Administrator\Documents\sdksetup10.exe"
+    winsdk_path = "C:\Program Files (x86)\Windows Kits\\10"
+    winsdk_name = "Windows SDK 10"
+    winsdk_options = "/q "
+    return install_dependency(winsdk_url, winsdk_dest, winsdk_name, winsdk_path, winsdk_options)
+
+def install_ultravnc():
+    ultravnc_url = "http://www.uvnc.com/component/jdownloads/finish/4-setup/291-ultravnc-1210-x64-setup/0.html"
+    ultravnc_dest = "C:\Users\Administrator\Documents\ultravnc_setup.exe"
+    ultravnc_path = "C:\Program Files\UltraVNC"
+    ultravnc_name = "UltraVNC"
+    ultravnc_options = "-ArgumentList '/DIR=\"C:\Program Files\UltraVNC\"',\"/SILENT\",'/TYPE=\"UltraVNC Server Only\"',\"/LOG\" "
+    return install_dependency(ultravnc_url, ultravnc_dest, ultravnc_name, ultravnc_path, ultravnc_options)
+
+def install_vstudio2015():
     vstudio_url = "http://download.microsoft.com/download/D/2/3/D23F4D0F-BA2D-4600-8725-6CCECEA05196/vs_community_ENU.exe"
-    vstudio_dest = "vs_community.exe"
-    install_vstudio = r'''
+    vstudio_dest = "C:\Users\Administrator\Documents\\vs_community.exe"
+    vstudio_path = "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC"
+    vstudio_name = ""
+    cmd = r'''
 if(!(Test-Path "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC")) {
     $url = "%s"
-    $output = "C:\Users\Administrator\Documents\%s"
+    $output = "%s"
     Write-Output "Downloading Visual Studio 2015..."
     (New-Object System.Net.WebClient).DownloadFile($url, $output)
     Write-Output "Download completed"
-    Write-Output "You have to install Visual Studio 2015 (including Visual C++), installation file: C:\Users\Administrator\Documents\%s"
+    Write-Output "You have to install Visual Studio 2015 (including Visual C++), installation file: %s"
     Exit 1
 } else {
     Write-Output "Visual Studio 2015 already installed"
 }
     ''' % (vstudio_url, vstudio_dest, vstudio_dest)
-    commands += install_vstudio
+    return cmd
 
+def install_vstudio2013():
     vstudio2013_url = " http://download.microsoft.com/download/A/A/D/AAD1AA11-FF9A-4B3C-8601-054E89260B78/vs_community.exe"
-    vstudio2013_dest = "vs2013_community.exe"
-    install_vstudio2013 = r'''
+    vstudio2013_dest = "C:\Users\Administrator\Documents\\vs2013_community.exe"
+    cmd = r'''
 if(!(Test-Path "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC")) {
     $url = "%s"
-    $output = "C:\Users\Administrator\Documents\%s"
+    $output = "%s"
     Write-Output "Downloading Visual Studio 2013..."
     (New-Object System.Net.WebClient).DownloadFile($url, $output)
     Write-Output "Download completed"
-    Write-Output "You have to install Visual Studio 2013 (including Visual C++), installation file: C:\Users\Administrator\Documents\%s"
+    Write-Output "You have to install Visual Studio 2013 (including Visual C++), installation file: %s"
     Exit 1
 } else {
     Write-Output "Visual Studio 2013 already installed"
 }
     ''' % (vstudio2013_url, vstudio2013_dest, vstudio2013_dest)
-    commands += install_vstudio2013
-    # no longer need Qt for VS 14.0 2015
-    """
-    # FIXME FIXME FIXME: add unattended Qt install script according to these
-    # instructions: https://doc.qt.io/qtinstallerframework/noninteractive.html
-    qt_url = "http://download.qt.io/official_releases/qt/5.6/5.6.0/qt-opensource-windows-x86-msvc2015_64-5.6.0.exe"
-    qt_dest = "C:\Users\Administrator\Documents\qtsetup.exe"
-    install_qt = r'''
-if(!(Test-Path "C:\Qt\Qt5.6.0\5.6\msvc2015_64")) {
-    $url = "%s"
-    $output = "%s"
-    $start_time = Get-Date
-    Write-Output "Downloading Qt (for VS 14.0 2015)..."
-    (New-Object System.Net.WebClient).DownloadFile($url, $output)
-    $time = (Get-Date).Subtract($start_time).Seconds
-    Write-Output "Download completed after $time second(s)"
-    Write-Output "Installing Qt (for VS 14.0 2015)..."
-    Start-Process "%s" -Wait
-    Write-Output "Qt (for VS 14.0 2015) installed"
-} else {
-    Write-Output "Qt (for VS 14.0 2015) already installed"
-}
-    ''' % (qt_url, qt_dest, qt_dest)
-    commands += install_qt
-    """
-
-    # FIXME FIXME FIXME: add unattended Qt install script according to these
-    # instructions: https://doc.qt.io/qtinstallerframework/noninteractive.html
-    qt_url = "http://download.qt.io/official_releases/qt/5.6/5.6.0/qt-opensource-windows-x86-msvc2013_64-5.6.0.exe"
-    qt_dest = "C:\Users\Administrator\Documents\qtsetup_vs2013.exe"
-    install_qt = r'''
-if(!(Test-Path "C:\Qt\Qt5.6.0\5.6\msvc2013_64")) {
-    $url = "%s"
-    $output = "%s"
-    $start_time = Get-Date
-    Write-Output "Downloading Qt (for VS 12.0 2013)..."
-    (New-Object System.Net.WebClient).DownloadFile($url, $output)
-    $time = (Get-Date).Subtract($start_time).Seconds
-    Write-Output "Download completed after $time second(s)"
-    Write-Output "Installing Qt (for VS 12.0 2013)..."
-    Start-Process "%s" -Wait
-    Write-Output "Qt (for VS 12.0 2013) installed"
-} else {
-    Write-Output "Qt (for VS 12.0 2013) already installed"
-}
-    ''' % (qt_url, qt_dest, qt_dest)
-    commands += install_qt
-
-    winsdk_url = "http://download.microsoft.com/download/6/A/2/6A2ECE81-C934-4E47-91CC-52DA00A65345/sdksetup.exe"
-    winsdk_dest = "C:\Users\Administrator\Documents\sdksetup10.exe"
-    install_winsdk = r'''
-if(!(Test-Path "C:\Program Files (x86)\Windows Kits\10")) {
-    $url = "%s"
-    $output = "%s"
-    $start_time = Get-Date
-    Write-Output "Downloading Windows SDK 10..."
-    (New-Object System.Net.WebClient).DownloadFile($url, $output)
-    $time = (Get-Date).Subtract($start_time).Seconds
-    Write-Output "Download completed after $time second(s)"
-    Write-Output "Installing Windows SDK 10..."
-    Start-Process "%s" /q -Wait
-    Write-Output "Windows SDK 10 installed"
-} else {
-    Write-Output "Windows SDK 10 already installed"
-}
-    ''' % (winsdk_url, winsdk_dest, winsdk_dest)
-    commands += install_winsdk
-    
-    ultravnc_url = "http://www.uvnc.com/component/jdownloads/finish/4-setup/291-ultravnc-1210-x64-setup/0.html"
-    ultravnc_dest = "C:\Users\Administrator\Documents\ultravnc_setup.exe"
-    install_ultravnc = r'''
-if(!(Test-Path "C:\Program Files\UltraVNC")) {
-    $url = "%s"
-    $output = "%s"
-    $start_time = Get-Date
-    Write-Output "Downloading UltraVNC..."
-    (New-Object System.Net.WebClient).DownloadFile($url, $output)
-    $time = (Get-Date).Subtract($start_time).Seconds
-    Write-Output "Download completed after $time second(s)"
-    Write-Output "Installing UltraVNC..."
-    Start-Process "%s" -ArgumentList '/DIR="C:\Program Files\UltraVNC"',"/SILENT",'/TYPE="UltraVNC Server Only"',"/LOG" -Wait
-    Write-Output "UltraVNC installed"
-} else {
-    Write-Output "UltraVNC already installed"
-}
-    ''' % (ultravnc_url, ultravnc_dest, ultravnc_dest)
-    commands += install_ultravnc
-
-    with hide('running'):
-        run(commands)
+    return cmd
 
 
 def adjust_env():
