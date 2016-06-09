@@ -5,6 +5,16 @@
 #include <iostream>
 #include <cstdlib>
 
+#if defined(Q_OS_WIN32)
+#include "../../google-crashpad/crashpad/client/crashpad_client.h"
+#include "../../google-crashpad/crashpad/third_party/mini_chromium/mini_chromium/base/files/file_path.h"
+#include "../../google-crashpad/crashpad/client/settings.h"
+#include "../../google-crashpad/crashpad/client/crash_report_database.h"
+#elif defined(Q_OS_LINUX)
+#include "crash_handler/CrashHandler.hpp"
+#include "crash_handler/CrashUploader.hpp"
+#endif
+
 namespace crashup {
 
 const std::string Crashup::report_minidumps_relative_path = "minidumps";
@@ -14,10 +24,11 @@ Crashup::Crashup(std::string working_dir, std::string server_address)
   this->report_minidumps_dirpath = "";
   this->working_dir = working_dir;
   this->server_address = server_address;
-  this->_crashHandler = nullptr;
-  this->_crashUploader = nullptr;
 #if defined(Q_OS_WIN32)
   this->_crashpad_client = nullptr;
+#elif defined(Q_OS_LINUX)
+  this->_crashHandler = nullptr;
+  this->_crashUploader = nullptr;
 #endif
 }
 
@@ -45,6 +56,7 @@ bool Crashup::checkRelativeDirpath(std::string &dirpath) {
 
 void Crashup::initCrashHandler() {
 #if defined(Q_OS_WIN32)
+  // initialize crash handler
   this->_crashpad_client = new crashpad::CrashpadClient();
   const std::wstring handler(L"C:\\Users\\Administrator\\Documents\\desktop-"
                              L"crashup\\google-crashpad\\crashpad\\out\\Debug_"
@@ -62,6 +74,15 @@ void Crashup::initCrashHandler() {
     std::cerr << "UseHandler" << std::endl;
     exit(1);
   }
+  // turn on minidump uploads in crashdb settings
+  res = crashpad::CrashReportDatabase::Initialize(base::FilePath(crashdb))
+            ->GetSettings()
+            ->SetUploadsEnabled(true);
+  if (!res) {
+    std::cerr << "SetUploadsEnabled" << std::endl;
+    exit(1);
+  }
+
 #elif defined(Q_OS_LINUX)
   std::string report_minidumps_absolute_dirpath =
       Crashup::report_minidumps_relative_path;
@@ -90,9 +111,11 @@ void Crashup::initCrashHandler() {
 }
 
 void Crashup::writeMinidump() {
+#if defined(Q_OS_LINUX)
   if (_crashHandler != nullptr)
     _crashHandler->writeMinidump();
   else
+#endif
     throw CrashupInitializationException("CrashHandler not initialized.");
 }
 
@@ -100,6 +123,7 @@ void Crashup::writeMinidump() {
 /* first (or even at all)                                               */
 void Crashup::initCrashUploader(const std::string &product_name,
                                 const std::string &product_version) {
+#if defined(Q_OS_LINUX)
   std::string report_minidumps_absolute_dirpath =
       Crashup::report_minidumps_relative_path;
   if (checkRelativeDirpath(report_minidumps_absolute_dirpath)) {
@@ -112,12 +136,15 @@ void Crashup::initCrashUploader(const std::string &product_name,
   } else {
     throw CrashupInitMinidumpDirpathException();
   }
+#endif
 }
 
 void Crashup::uploadPendingMinidumps() {
+#if defined(Q_OS_LINUX)
   if (_crashUploader != nullptr)
     _crashUploader->uploadPendingMinidumps();
   else
+#endif
     throw CrashupInitializationException("CrashUploader not initialized.");
 }
 

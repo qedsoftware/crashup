@@ -5,14 +5,16 @@
 #include "updates/Updates.hpp"
 #include "stats/Stats.hpp"
 #include "SettingsWidget.hpp"
-#include "crash_handler/CrashHandler.hpp"
-#include "crash_handler/CrashUploader.hpp"
-#if defined(Q_OS_WIN32)
-#include "../../google-crashpad/crashpad/client/crashpad_client.h"
-#include "../../google-crashpad/crashpad/third_party/mini_chromium/mini_chromium/base/files/file_path.h"
-#endif
 #include <QtCore/QProcess>
 #include "exceptions.hpp"
+
+namespace crashpad {
+class CrashpadClient;
+};
+namespace crash_handling {
+class CrashHandler;
+class CrashUploader;
+};
 
 namespace crashup {
 
@@ -24,9 +26,10 @@ private:
   Stats _stats;
 #if defined(Q_OS_WIN32)
   crashpad::CrashpadClient *_crashpad_client;
-#endif
+#elif defined(Q_OS_LINUX)
   crash_handling::CrashHandler *_crashHandler;
   crash_handling::CrashUploader *_crashUploader;
+#endif
   static const std::string report_minidumps_relative_path;
 
   bool checkRelativeDirpath(std::string &dirpath);

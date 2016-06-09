@@ -102,6 +102,7 @@ if (MSVC)
     target_link_libraries (Crashup ${CRASHPAD_PATH}out/Debug_x64/obj/compat/crashpad_compat.lib)
     target_link_libraries (Crashup ${CRASHPAD_PATH}out/Debug_x64/obj/third_party/getopt/getopt.lib)
     target_link_libraries (Crashup ${CRASHPAD_PATH}out/Debug_x64/obj/third_party/mini_chromium/mini_chromium/base/base.lib)
+    target_link_libraries (Crashup "C:/Program Files (x86)/Windows Kits/8.1/Lib/winv6.3/um/x64/RpcRT4.lib")
 endif ()
 
 target_link_libraries (CrashHandler Qt5::Core)
