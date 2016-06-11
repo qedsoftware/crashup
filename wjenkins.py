@@ -317,6 +317,7 @@ rm %s\%s.zip
 
 
 def compile_google_breakpad():
+    # TODO compile only when not present!
     pref = "C:\Users\Administrator\Documents\desktop-crashup\google-breakpad"
     cmd = r'''
     Write-Output "Compiling google breakpad..."
@@ -342,6 +343,7 @@ akpad::MinidumpLinuxMapsList::Read(unsigned int)" (?Read@MinidumpLinuxMapsList@
 google_breakpad@@EAE_NI@Z) [C:\Users\Administrator\Documents\desktop-crashup\go 
 
 https://bugs.chromium.org/p/google-breakpad/issues/detail?id=669
+this is because breakpad developers don't care about windows
 '''
 
 
@@ -360,7 +362,7 @@ def compile_crashpad():
         Write-Output "Crashpad already compiled."
     }
     cd ..\..
-    ''' # % (pref, pref, pref, pref)
+    '''
     with hide('running'):
         run(cmd)
 
@@ -420,8 +422,7 @@ def remote_build(hoststring, password):
         send_files()
         adjust_env()
         compile_crashpad()
-        # TODO compile only when not present!
-        compile_google_breakpad()
+        # compile_google_breakpad()
         cmd = '''
         cd desktop-crashup
         C:\Python27\python.exe build_windows.py
