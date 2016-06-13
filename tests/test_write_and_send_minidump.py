@@ -16,12 +16,6 @@ if (not sys.platform.startswith('win')):
     from .common import check_if_minidump_upload_succeeded
 
 
-if sys.platform.startswith('win'):
-    MINIDUMPS_DIR = "crashdb/reports"
-else:
-    MINIDUMPS_DIR = "minidumps"
-
-
 def get_set_of_tracebacks(platform):
     import requests
     request = requests.get(
@@ -32,7 +26,8 @@ def get_set_of_tracebacks(platform):
         if x['platform'] == platform:
             dumps.add(x['id'])
     return dumps
-  
+
+
 def get_crash_report_id(platform, crash_type, dumps):
     import requests
     request = requests.get(
@@ -47,55 +42,64 @@ def get_crash_report_id(platform, crash_type, dumps):
                     return x['id']
     return -1
 
+
 class WriteMinidumpTests(unittest.TestCase):
     @cleanup_minidumps
     def test_segfault(self):
-        with runapp() as app:
-            app['segfaultButton'].click()
-            time.sleep(0.5)
-            self.assertEqual(len(os.listdir(MINIDUMPS_DIR)), 1)
-        return
-      
-        #dumps = get_set_of_tracebacks("windows")
+        if sys.platform.startswith('win'):
+            dumps = get_set_of_tracebacks("windows")
+            with runapp() as app:
+                app['segfaultButton'].click()
+                time.sleep(0.5)
+                self.assertEqual(len(os.listdir("crashdb/reports")), 1)
+            id_to_remove = get_crash_report_id(
+                "windows",
+                "on_segfaultButton_clicked",
+                dumps
+            )
+            self.assertTrue(id_to_remove >= 0)
+        else:
+            with runapp() as app:
+                app['segfaultButton'].click()
+                time.sleep(0.5)
+                self.assertEqual(len(os.listdir("minidumps")), 1)
+            return
+            with runapp() as app:
+                app['uploadButton'].click()
+                # 5 sec to wait for an upload to complete
+                time.sleep(5.1)
         
-        with runapp() as app:
-            app['uploadButton'].click()
-            # 5 sec to wait for an upload to complete
-            time.sleep(5.1)
-    
-            data = json.load(open("minidumps/.minidumps.json"))
-            self.assertEqual(len(data),1)
-            remote_filename = data[0]["remote_filename"]
-            check_if_minidump_upload_succeeded(self,remote_filename)
-            
-        #id_to_remove = get_crash_report_id("windows",
-        #                                   "on_segfaultButton_clicked",
-        #                                   dumps)
-        #self.assertTrue(id_to_remove >= 0)
-        
-        #Deleting crash from server
+                data = json.load(open("minidumps/.minidumps.json"))
+                self.assertEqual(len(data),1)
+                remote_filename = data[0]["remote_filename"]
+                check_if_minidump_upload_succeeded(self,remote_filename)
 
     @cleanup_minidumps
     def test_exception(self):
-        with runapp() as app:
-            app['exceptionButton'].click()
-            time.sleep(0.5)
-            self.assertEqual(len(os.listdir(MINIDUMPS_DIR)), 1)
-        return
-      
-        #dumps = get_set_of_tracebacks("windows")
-        
-        with runapp() as app:
-            app['uploadButton'].click()
-            # 5 sec to wait for an upload to complete
-            time.sleep(5.1)
+        if sys.platform.startswith('win'):
+            dumps = get_set_of_tracebacks("windows")
+            with runapp() as app:
+                app['exceptionButton'].click()
+                time.sleep(0.5)
+                self.assertEqual(len(os.listdir("crashdb/reports")), 1)
+            id_to_remove = get_crash_report_id(
+                "windows",
+                "on_exceptionButton_clicked",
+                dumps
+            )
+            self.assertTrue(id_to_remove >= 0)
+        else:
+            with runapp() as app:
+                app['exceptionButton'].click()
+                time.sleep(0.5)
+                self.assertEqual(len(os.listdir("minidumps")), 1)
+            return
+            with runapp() as app:
+                app['uploadButton'].click()
+                # 5 sec to wait for an upload to complete
+                time.sleep(5.1)
 
-            data = json.load(open("minidumps/.minidumps.json"))
-            self.assertEqual(len(data),1)
-            remote_filename = data[0]["remote_filename"]
-            check_if_minidump_upload_succeeded(self,remote_filename)
-        
-        #id_to_remove = get_crash_report_id("windows",
-        #                                   "on_exceptionButton_clicked",
-        #                                   dumps)
-        #self.assertTrue(id_to_remove >= 0)
+                data = json.load(open("minidumps/.minidumps.json"))
+                self.assertEqual(len(data),1)
+                remote_filename = data[0]["remote_filename"]
+                check_if_minidump_upload_succeeded(self,remote_filename)
