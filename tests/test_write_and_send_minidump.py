@@ -15,17 +15,20 @@ from .common import runapp, cleanup_minidumps
 if (not sys.platform.startswith('win')):
     from .common import check_if_minidump_upload_succeeded
 
+
+if sys.platform.startswith('win'):
+    MINIDUMPS_DIR = "crashdb/reports"
+else:
+    MINIDUMPS_DIR = "minidumps"
+
+
 class WriteMinidumpTests(unittest.TestCase):
     @cleanup_minidumps
     def test_segfault(self):
-        # FIXME FIXME FIXME
-        # turned off on windows until we fix our google breakpad installation
-        if sys.platform.startswith('win'):
-            return
         with runapp() as app:
             app['segfaultButton'].click()
-            time.sleep(0.05)
-            self.assertEqual(len(os.listdir("minidumps")), 1)
+            time.sleep(0.5)
+            self.assertEqual(len(os.listdir(MINIDUMPS_DIR)), 1)
         return
         with runapp() as app:
             app['uploadButton'].click()
@@ -39,12 +42,10 @@ class WriteMinidumpTests(unittest.TestCase):
 
     @cleanup_minidumps
     def test_exception(self):
-        if sys.platform.startswith('win'):
-            return
         with runapp() as app:
             app['exceptionButton'].click()
-            time.sleep(0.05)
-            self.assertEqual(len(os.listdir("minidumps")), 1)
+            time.sleep(0.5)
+            self.assertEqual(len(os.listdir(MINIDUMPS_DIR)), 1)
         return
         with runapp() as app:
             app['uploadButton'].click()

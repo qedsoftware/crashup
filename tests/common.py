@@ -32,18 +32,23 @@ def runapp():
 def cleanup_minidumps(func):
     assert hasattr(func, '__call__')
     assert not isinstance(func, type)
+    if sys.platform.startswith('win'):
+        DIR = "crashdb"
+    else:
+        DIR = "minidumps"
     @functools.wraps(func)
     def newfunc(*args, **kwargs):
-        if os.path.exists("minidumps"):
-            shutil.rmtree("minidumps")
-        assert not os.path.exists("minidumps")
+        if os.path.exists(DIR):
+            shutil.rmtree(DIR)
+        assert not os.path.exists(DIR)
         try:
             res = func(*args, **kwargs)
         finally:
-            if os.path.exists("minidumps"):
-                shutil.rmtree("minidumps")
+            if os.path.exists(DIR):
+                shutil.rmtree(DIR)
         return res
     return newfunc
+
 
 
 def check_if_minidump_upload_succeeded(self, remote_filename):
@@ -73,5 +78,3 @@ def check_if_minidump_upload_succeeded(self, remote_filename):
             sudo("rm -rf "+date_foldername+"/name/"+res[0]+"/")
         if (len(run("find ./"+date_foldername+"/name/ -type f || -type d")) == 0):
             sudo("rm -rf "+date_foldername+"/")
-
-

@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
    */
   std::string working_dir_path = ".";
   std::string server_address =
-      "http://ec2-52-91-29-60.compute-1.amazonaws.com/submit";
+      "http://ec2-52-91-29-60.compute-1.amazonaws.com/api/upload_minidump/";
 
   crashup::Crashup crashup(working_dir_path, server_address);
 

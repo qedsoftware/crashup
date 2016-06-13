@@ -37,4 +37,9 @@ dump_syms demoapp.pdb > demoapp.sym
 
 If there was an error CoCreateInstance CLSID_DiaSource failed (msdia80.dll unregistered?)
 It is connected to msdia80.dll.
-After installing Visual Studio on my machine error disapeared.
+After installing (old) Visual Studio on my machine error disapeared.
+
+!!!! <IMPORTANT> !!!!!
+This error keeped to appear despite registering msdia120.dll (regsrv32.exe msdia120.dll)
+What solved this problem was to upgrade dump_syms.exe to the _latest_ version from the repo
+!!!! </IMPORTANT> !!!!

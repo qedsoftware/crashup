@@ -63,8 +63,16 @@ void Crashup::initCrashHandler() {
                              L"x64\\crashpad_handler.exe");
   const std::wstring crashdb(L".\\crashdb");
   int res = _crashpad_client->StartHandler(
-      base::FilePath(handler), base::FilePath(crashdb), "",
-      std::map<std::string, std::string>(), std::vector<std::string>(), false);
+      base::FilePath(handler), base::FilePath(crashdb), this->server_address,
+      // data to send with POST requests uploading minidumps:
+      std::map<std::string, std::string>{
+          {"app_name", "demoapp"},
+          {"app_version", "0.42"},
+          {"app_platform", "windows"},
+          {"mac_address", "<not available yet>"}},
+      // additional options for 'crashpad_handler' executable:
+      std::vector<std::string>{"--no-rate-limit"}, false);
+  // TODO make --no-rate-limit configurable from outside
   if (!res) {
     std::cerr << "StartHandler" << std::endl;
     exit(1);

@@ -29,6 +29,10 @@ def install_requirements():
         import pyautogui
     except:
         do_call("pip", "install", "pyautogui")
+    try:
+        import requests
+    except:
+        do_call("pip", "install", "requests")
 
 
 def build_app():
@@ -49,6 +53,20 @@ def build_app():
     )
     do_call("cmake", "--build", os.getcwd(), "--config", "Debug")
     os.chdir("..")
+
+
+def upload_symbols():
+    import requests
+    pdb = "build\\Debug\\demoapp.pdb"
+    os.system("crashup\\dump_syms.exe " + pdb + " > demoapp.sym")
+    with open("demoapp.sym") as f:
+        request = requests.post(
+            "http://ec2-52-91-29-60.compute-1.amazonaws.com/api/upload_symbols/",
+            files=dict(symbols=f), data=dict(
+                app_name="demoapp", app_platform="windows", app_version="0.42"
+            )
+        )
+    print request.text
 
 
 def copy_qt_dlls():
@@ -84,4 +102,5 @@ if __name__ == "__main__":
     install_requirements()
     build_app()
     copy_qt_dlls()
+    upload_symbols()
     run_tests()
