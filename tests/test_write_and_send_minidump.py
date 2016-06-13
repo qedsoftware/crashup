@@ -22,6 +22,31 @@ else:
     MINIDUMPS_DIR = "minidumps"
 
 
+def get_set_of_tracebacks(platform):
+    import requests
+    request = requests.get(
+        "http://ec2-52-91-29-60.compute-1.amazonaws.com/api/list_minidumps/"
+        )
+    dumps = set()
+    for x in request.json():
+        if x['platform'] == platform:
+            dumps.add(x['id'])
+    return dumps
+  
+def get_crash_report_id(platform, crash_type, dumps):
+    import requests
+    request = requests.get(
+        "http://ec2-52-91-29-60.compute-1.amazonaws.com/api/list_minidumps/"
+        )
+    for x in request.json():
+        if x['platform'] == platform:
+            if x['id'] in dumps:
+                dumps.remove(x['id'])
+            else:
+                if crash_type in str(x['report_text']):
+                    return x['id']
+    return -1
+
 class WriteMinidumpTests(unittest.TestCase):
     @cleanup_minidumps
     def test_segfault(self):
@@ -30,6 +55,9 @@ class WriteMinidumpTests(unittest.TestCase):
             time.sleep(0.5)
             self.assertEqual(len(os.listdir(MINIDUMPS_DIR)), 1)
         return
+      
+        #dumps = get_set_of_tracebacks("windows")
+        
         with runapp() as app:
             app['uploadButton'].click()
             # 5 sec to wait for an upload to complete
@@ -39,6 +67,13 @@ class WriteMinidumpTests(unittest.TestCase):
             self.assertEqual(len(data),1)
             remote_filename = data[0]["remote_filename"]
             check_if_minidump_upload_succeeded(self,remote_filename)
+            
+        #id_to_remove = get_crash_report_id("windows",
+        #                                   "on_segfaultButton_clicked",
+        #                                   dumps)
+        #self.assertTrue(id_to_remove >= 0)
+        
+        #Deleting crash from server
 
     @cleanup_minidumps
     def test_exception(self):
@@ -47,6 +82,9 @@ class WriteMinidumpTests(unittest.TestCase):
             time.sleep(0.5)
             self.assertEqual(len(os.listdir(MINIDUMPS_DIR)), 1)
         return
+      
+        #dumps = get_set_of_tracebacks("windows")
+        
         with runapp() as app:
             app['uploadButton'].click()
             # 5 sec to wait for an upload to complete
@@ -56,3 +94,8 @@ class WriteMinidumpTests(unittest.TestCase):
             self.assertEqual(len(data),1)
             remote_filename = data[0]["remote_filename"]
             check_if_minidump_upload_succeeded(self,remote_filename)
+        
+        #id_to_remove = get_crash_report_id("windows",
+        #                                   "on_exceptionButton_clicked",
+        #                                   dumps)
+        #self.assertTrue(id_to_remove >= 0)
