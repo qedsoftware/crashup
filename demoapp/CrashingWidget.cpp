@@ -5,11 +5,11 @@
 #include <signal.h>
 
 CrashingWidget::CrashingWidget(
-    std::function<void(std::string, std::string)> logEvent,
+    std::function<void(std::string, std::string)> logEventCallback,
     std::function<void()> uploadMinidumpsFromDir, QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::CrashingWidget) {
+    : QMainWindow(parent), ui(new Ui::CrashingWidget),
+      logEvent(logEventCallback) {
   ui->setupUi(this);
-  this->logEvent = logEvent;
   this->uploadMinidumpsFromDir = uploadMinidumpsFromDir;
 }
 
@@ -26,7 +26,7 @@ void CrashingWidget::on_segfaultButton_clicked() {
 }
 
 void CrashingWidget::on_statsButton_clicked() {
-  logEvent("sample_event", ui->textEdit->toPlainText().toStdString());
+  logEvent("sample_event", ui->textEdit->toPlainText().toUtf8().constData());
 }
 
 void CrashingWidget::on_downloadButton_clicked() {

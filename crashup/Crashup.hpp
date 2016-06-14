@@ -6,7 +6,6 @@
 #include "stats/Stats.hpp"
 #include "SettingsWidget.hpp"
 #include <QtCore/QProcess>
-#include "exceptions.hpp"
 
 namespace crashpad {
 class CrashpadClient;
@@ -22,30 +21,30 @@ class Crashup {
 
 private:
   std::string working_dir, server_address;
-  std::string report_minidumps_dirpath;
+  std::string app_name, app_version, app_platform;
   Stats _stats;
 #if defined(Q_OS_WIN32)
   crashpad::CrashpadClient *_crashpad_client;
 #elif defined(Q_OS_LINUX)
-  crash_handling::CrashHandler *_crashHandler;
-  crash_handling::CrashUploader *_crashUploader;
+  crash_handling::CrashHandler *_crash_handler;
+  crash_handling::CrashUploader *_crash_uploader;
 #endif
-  static const std::string report_minidumps_relative_path;
 
-  bool checkRelativeDirpath(std::string &dirpath);
+  std::string makeInternalDirPath(const std::string &);
 
 public:
   Crashup(std::string working_dir, std::string server_address);
-  Updates &updates();
-  Stats &stats();
+
+  void setAppName(const std::string &);
+  void setAppVersion(const std::string &);
+  void setAppPlatform(const std::string &);
 
   /* initiates the _crashHandler */
   void initCrashHandler();
   /* writes a minidump whenever asked for */
   void writeMinidump();
   /* initiates the _crashUploader */
-  void initCrashUploader(const std::string &product_name,
-                         const std::string &product_version);
+  void initCrashUploader();
   /* uploades minidump */
   void uploadPendingMinidumps();
 

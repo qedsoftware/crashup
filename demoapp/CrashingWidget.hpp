@@ -21,7 +21,7 @@ class CrashingWidget : public QMainWindow {
   Q_OBJECT
 
 public:
-  CrashingWidget(std::function<void(std::string, std::string)> logEvent,
+  CrashingWidget(std::function<void(std::string, std::string)> logEventCallback,
                  std::function<void()> uploadMinidump, QWidget *parent = 0);
   ~CrashingWidget();
 
