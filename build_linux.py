@@ -41,6 +41,10 @@ def install_requirements():
         import fabric
     except:
         do_call("pip", "install", "fabric")
+    try:
+        import requests
+    except:
+        do_call("pip", "install", "requests")
 
 
 def run_clang_format():

@@ -26,7 +26,8 @@ void CrashingWidget::on_segfaultButton_clicked() {
 }
 
 void CrashingWidget::on_statsButton_clicked() {
-  logEvent("sample_event", ui->textEdit->toPlainText().toUtf8().constData());
+  logEvent("message_entered_by_user",
+           ui->textEdit->toPlainText().toUtf8().constData());
 }
 
 void CrashingWidget::on_downloadButton_clicked() {
