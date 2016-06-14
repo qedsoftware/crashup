@@ -39,14 +39,11 @@ public:
   void setAppVersion(const std::string &);
   void setAppPlatform(const std::string &);
 
-  /* initiates the _crashHandler */
   void initCrashHandler();
-  /* writes a minidump whenever asked for */
   void writeMinidump();
-  /* initiates the _crashUploader */
   void initCrashUploader();
-  /* uploades minidump */
   void uploadPendingMinidumps();
+  void sendUsageReport(const std::string &, const std::string &);
 
   SettingsWidget &createSettingsWidget();
   std::string getFileRevisions();        // for stats and crash handler

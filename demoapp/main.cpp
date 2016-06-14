@@ -35,6 +35,8 @@ int main(int argc, char *argv[]) {
   /* given to the crashup constructor */
   crashup.initCrashUploader();
 
+  crashup.sendUsageReport("Hello", "World!");
+
   CrashingWidget w([&](std::string event_name,
                        std::string event_data) { qDebug() << "bla"; },
                    [&]() { crashup.uploadPendingMinidumps(); });

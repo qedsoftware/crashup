@@ -56,6 +56,9 @@ add_library(Stats ../crashup/stats/Stats.cpp)
 add_library(Downloader ../crashup/updates/Downloader.cpp)
 target_link_libraries (Downloader Qt5::Core)
 target_link_libraries (Downloader Qt5::Network)
+target_link_libraries (Stats Qt5::Core)
+target_link_libraries (Stats Qt5::Network)
+
 
 #################################
 ### uploading crashes linking ###

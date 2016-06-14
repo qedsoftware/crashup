@@ -157,4 +157,14 @@ void Crashup::uploadPendingMinidumps() {
     throw CrashupInitializationException("CrashUploader not initialized.");
 }
 
+void Crashup::sendUsageReport(const std::string &t, const std::string &d) {
+  this->_stats.send(std::map<std::string, std::string>{
+      {"event_type", t},
+      {"event_data", d},
+      {"app_name", this->app_name},
+      {"app_version", this->app_version},
+      {"app_platform", this->app_platform},
+      {"mac_address", "<not available yet>"},
+  });
+}
 }; // namespace crashup
