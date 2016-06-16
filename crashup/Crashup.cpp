@@ -11,6 +11,7 @@
 #include "../../google-crashpad/crashpad/third_party/mini_chromium/mini_chromium/base/files/file_path.h"
 #include "../../google-crashpad/crashpad/client/settings.h"
 #include "../../google-crashpad/crashpad/client/crash_report_database.h"
+#include "../../google-crashpad/crashpad/client/crashpad_info.h"
 #elif defined(Q_OS_LINUX)
 #include "crash_handler/CrashHandler.hpp"
 #include "crash_handler/CrashUploader.hpp"

@@ -11,6 +11,9 @@ if (MSVC)
       string(REGEX REPLACE "/MDd" "/MTd" ${flag_var} "${${flag_var}}")
    endif(${flag_var} MATCHES "/MDd")
    endforeach(flag_var)
+   # http://stackoverflow.com/questions/5004858/stdmin-gives-error
+   # Ask politely <windows.h> not to be so stupid:
+   add_definitions(-DNOMINMAX)
 else ()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif ()
