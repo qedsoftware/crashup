@@ -11,6 +11,17 @@ to "C:\Users\Administrator\Documents". Also, we treat this folder
 as our working directory. We are not using WinRM because there is no secure
 WinRM client running under linux (all send passwords in plaintext over http).
 
+Powershellserver notes:
+  - If you get this error message:
+    "Cannot open certificate store: The parameter is incorrect. (0x80070057)",
+    go to "Server Key" tab and generate new certificate/key.
+  - Reinstalling in case the trial period expires:
+    Delete 'C:\Program Files\nsoftware' and all the registry keys containing
+    string 'nsoftware', then install powershellserver normally.
+    Note: there is need to configure powershellserver SFTP root directory to be
+    "C:\\" for file transfer to work properly (our script uses absolute paths,
+    but root directory need to be set to "permit" those absolute paths)
+
 Headless gui automation:
  - login through RDP (rdesktop) and open UltraVNC settings (uvnc_settings.exe)
  - click "install service" and "enable service" or something like this - run
