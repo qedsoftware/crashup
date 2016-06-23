@@ -1,11 +1,16 @@
 #pragma once
-#include <string>
-#include <map>
-#include <vector>
-#include "updates/Updates.hpp"
-#include "stats/Stats.hpp"
 #include "SettingsWidget.hpp"
+#include "stats/Stats.hpp"
+#include "updates/Updates.hpp"
+#include <QObject>
+#include <QTimer>
 #include <QtCore/QProcess>
+#include <map>
+#include <string>
+#include <vector>
+#if defined(Q_OS_WIN32)
+#include "../../google-crashpad/crashpad/client/simple_string_dictionary.h"
+#endif
 
 namespace crashpad {
 class CrashpadClient;
@@ -17,6 +22,24 @@ class CrashUploader;
 
 namespace crashup {
 
+#if defined(Q_OS_WIN32)
+class Uptime : public QObject {
+  Q_OBJECT
+
+public:
+  Uptime();
+  crashpad::SimpleStringDictionary *getAnnotations();
+public slots:
+  void updateUptime();
+
+private:
+  int uptime;
+  std::string uptime_str;
+  crashpad::SimpleStringDictionary *annotations;
+  QTimer *timer;
+};
+#endif
+
 class Crashup {
 
 private:
@@ -25,6 +48,7 @@ private:
   Stats _stats;
 #if defined(Q_OS_WIN32)
   crashpad::CrashpadClient *_crashpad_client;
+  Uptime uptime;
 #elif defined(Q_OS_LINUX)
   crash_handling::CrashHandler *_crash_handler;
   crash_handling::CrashUploader *_crash_uploader;
