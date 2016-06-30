@@ -33,6 +33,7 @@ target_link_libraries (CrashingWidget Qt5::Widgets)
 add_library(WidgetTracker WidgetTracker.cpp)
 target_link_libraries (WidgetTracker Qt5::Widgets)
 
+
 ############################################################################
 ### path to desktop_crashup project ########################################
 ############################################################################
@@ -114,6 +115,9 @@ endif ()
 target_link_libraries (CrashHandler Qt5::Core)
 target_link_libraries (CrashHandler ${CMAKE_THREAD_LIBS_INIT})
 
+add_library(MakeSegv SHARED MakeSegv.cpp)
+target_link_libraries(MakeSegv Qt5::Core)
+
 add_executable(demoapp main.cpp)
 target_link_libraries (demoapp CrashingWidget)
 target_link_libraries (demoapp WidgetTracker)
@@ -122,3 +126,4 @@ target_link_libraries (demoapp Stats)
 target_link_libraries (demoapp Downloader)
 target_link_libraries (demoapp CrashHandler)
 target_link_libraries (demoapp CrashUploader)
+target_link_libraries (demoapp MakeSegv)
