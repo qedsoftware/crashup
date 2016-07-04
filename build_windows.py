@@ -57,16 +57,18 @@ def build_app():
 
 def upload_symbols():
     import requests
-    pdb = "build\\Debug\\demoapp.pdb"
-    os.system("crashup\\dump_syms.exe " + pdb + " > demoapp.sym")
-    with open("demoapp.sym") as f:
-        request = requests.post(
-            "http://ec2-52-91-29-60.compute-1.amazonaws.com/api/upload_symbols/",
-            files=dict(symbols=f), data=dict(
-                app_name="demoapp", app_platform="windows", app_version="0.42"
+    pdb_path = "build\\Debug\\"
+    apps = ["demoapp", "MakeSegv"]
+    for app in apps:
+        #os.system("crashup\\dump_syms.exe "+ pdb_path + app + '.pdb ' + ' > ' + pdb_path + app + '.sym')
+        with open(pdb_path + app + '.pdb', 'rb') as f:
+            request = requests.post(
+                "http://ec2-52-91-29-60.compute-1.amazonaws.com/api/upload_symbols/",
+                files=dict(symbols=f), data=dict(
+                    app_name=app, app_platform="windows", app_version="0.42"
+                )
             )
-        )
-    print request.text
+        print request.text
 
 
 def copy_qt_dlls():
