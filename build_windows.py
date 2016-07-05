@@ -60,6 +60,7 @@ def upload_symbols():
     pdb_path = "build\\Debug\\"
     apps = ["demoapp", "MakeSegv"]
     for app in apps:
+        # If you want to do local conversion to *.sym file:
         #os.system("crashup\\dump_syms.exe "+ pdb_path + app + '.pdb ' + ' > ' + pdb_path + app + '.sym')
         with open(pdb_path + app + '.pdb', 'rb') as f:
             request = requests.post(
