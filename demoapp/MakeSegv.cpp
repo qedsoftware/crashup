@@ -2,6 +2,7 @@
 #include "MakeSegv.hpp"
 
 #include <cstdio>
+#include <thread>
 
 void MakeSegvException::raise() const { throw * this; }
 MakeSegvException *MakeSegvException::clone() const {
@@ -16,4 +17,14 @@ void make_segfault() {
 void make_cxxexception() {
   MakeSegvException *e = new MakeSegvException();
   e->raise();
+}
+
+void thread_make_segfault() {
+  std::thread th(make_segfault);
+  th.join();
+}
+
+void thread_make_cxxexception() {
+  std::thread th(make_cxxexception);
+  th.join();
 }

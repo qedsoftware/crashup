@@ -16,3 +16,5 @@ public:
 
 COMMON_DLLSPEC void make_segfault();
 COMMON_DLLSPEC void make_cxxexception();
+COMMON_DLLSPEC void thread_make_segfault();
+COMMON_DLLSPEC void thread_make_cxxexception();
