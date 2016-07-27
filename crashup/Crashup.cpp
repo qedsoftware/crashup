@@ -19,28 +19,6 @@
 
 namespace crashup {
 
-#if defined(Q_OS_WIN32)
-Uptime::Uptime() {
-  annotations = new crashpad::SimpleStringDictionary;
-  uptime = 0;
-  uptime_str = "0";
-  timer = new QTimer(this);
-  connect(timer, SIGNAL(timeout()), this, SLOT(updateUptime()));
-  timer->start(1000);
-  annotations->SetKeyValue("uptime", uptime_str.c_str());
-}
-
-crashpad::SimpleStringDictionary *Uptime::getAnnotations() {
-  return annotations;
-}
-
-void Uptime::updateUptime() {
-  ++uptime;
-  uptime_str = std::to_string(uptime);
-  annotations->SetKeyValue("uptime", uptime_str.c_str());
-}
-#endif
-
 Crashup::Crashup(std::string working_dir, std::string server_address)
     : _stats(working_dir, server_address) {
   this->working_dir = working_dir;
@@ -102,8 +80,6 @@ void Crashup::initCrashHandler() {
       std::vector<std::string>{"--no-rate-limit"}, false);
   // TODO make --no-rate-limit configurable from outside
   // --no-rate-limit  <-- disable throttling upload attempts to 1/hour
-  crashpad::CrashpadInfo::GetCrashpadInfo()->set_simple_annotations(
-      uptime.getAnnotations());
   if (!res) {
     throw CrashupInitializationException("CrashpadClient::StartHandler failed");
   }
