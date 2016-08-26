@@ -55,23 +55,6 @@ def build_app():
     os.chdir("..")
 
 
-def upload_symbols():
-    import requests
-    pdb_path = "build\\Debug\\"
-    apps = ["demoapp", "MakeSegv"]
-    for app in apps:
-        # If you want to do local conversion to *.sym file:
-        #os.system("crashup\\dump_syms.exe "+ pdb_path + app + '.pdb ' + ' > ' + pdb_path + app + '.sym')
-        with open(pdb_path + app + '.pdb', 'rb') as f:
-            request = requests.post(
-                "http://ec2-52-91-29-60.compute-1.amazonaws.com/api/upload_symbols/",
-                files=dict(symbols=f), data=dict(
-                    app_name=app, app_platform="windows", app_version="0.42"
-                )
-            )
-        print request.text
-
-
 def copy_qt_dlls():
     dlls = '''
     Qt5Concurrent.dll Qt5Concurrentd.dll Qt5Core.dll Qt5Cored.dll Qt5Gui.dll
@@ -105,5 +88,4 @@ if __name__ == "__main__":
     install_requirements()
     build_app()
     copy_qt_dlls()
-    upload_symbols()
     run_tests()

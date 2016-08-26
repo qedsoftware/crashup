@@ -1,6 +1,8 @@
 #include "CrashHandler.hpp"
 #include <QtCore/QProcess>
 
+#include <stdio.h>
+
 #if defined(Q_OS_LINUX)
 #include "client/linux/handler/exception_handler.h"
 #elif defined(Q_OS_WIN32)
@@ -30,7 +32,7 @@ google_breakpad::ExceptionHandler *CrashHandlerPrivate::pHandler = nullptr;
 bool CrashHandlerPrivate::bReportCrashesToSystem = false;
 
 /*****************************************/
-/* cumpCallback Function -- OS dependant */
+/* dumpCallback Function -- OS dependant */
 /*****************************************/
 
 #if defined(Q_OS_WIN32)
@@ -54,10 +56,12 @@ bool dumpCallback(const char *_dump_dir, const char *_minidump_id,
 #endif
   qDebug("BreakpadQt crash");
 
+// printing to stdout makes the string is printed nither to stdout nor stderr
+// this made hard to read minidump from program output
 #if defined(Q_OS_LINUX)
-  printf("Minidump saved as: %s\n", md.path());
+  fprintf(stderr, "Minidump saved as: %s\n", md.path());
 #elif defined(Q_OS_WIN32)
-  printf("Minidump saved as: %ls\n", _dump_dir);
+  fprintf(stderr, "Minidump saved as: %ls\n", _dump_dir);
 #endif
 
   /*

@@ -151,7 +151,7 @@ class WidgetTracker(object):
             pyautogui._pyautogui_x11._display = Xlib.display.Display(
                 os.environ['DISPLAY']
             )
-        self.proc = NonBlockingStderrProcess([self.appname])
+        self.proc = NonBlockingStderrProcess([self.appname, '--enable-widget-tracker'])
         try:
             # wait for application startup
             time_elapsed = 0.0

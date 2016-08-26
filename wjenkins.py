@@ -58,7 +58,7 @@ import fabric.contrib.files
 from fabric.api import env, show, hide, run, put, local, cd, settings
 
 
-DEFAULT_HOSTSTRING = "Administrator@54.84.41.90"
+DEFAULT_HOSTSTRING = "Administrator@107.23.3.175"
 
 def install_dependencies():
     # install cmake, qt, python, pip, etc.
@@ -68,7 +68,7 @@ def install_dependencies():
     commands = ""
     commands += install_cmake()
     commands += install_python()
-    commands += install_vstudio2015()
+    #commands += install_vstudio2015()
     commands += install_vstudio2013()
     #commands += install_qt_for_vstudio2015()
     commands += install_qt_for_vstudio2013()

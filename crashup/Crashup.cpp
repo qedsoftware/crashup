@@ -94,13 +94,10 @@ void Crashup::initCrashHandler() {
   crashdb += L"\\crashdb";
   int res = _crashpad_client->StartHandler(
       base::FilePath(handler), base::FilePath(crashdb),
-      this->server_address + "/api/upload_minidump/",
+      this->server_address + "/submit",
       // data to send with POST requests uploading minidumps:
-      std::map<std::string, std::string>{
-          {"app_name", this->app_name},
-          {"app_version", this->app_version},
-          {"app_platform", this->app_platform},
-          {"mac_address", "<not available yet>"}},
+      std::map<std::string, std::string>{{"ProductName", this->app_name},
+                                         {"Version", this->app_version}},
       // additional options for 'crashpad_handler' executable:
       std::vector<std::string>{"--no-rate-limit"}, false);
   // TODO make --no-rate-limit configurable from outside
@@ -166,7 +163,7 @@ void Crashup::initCrashUploader() {
   this->_crash_uploader = new crash_handling::CrashUploader(
       QString::fromStdString(this->app_name),
       QString::fromStdString(this->app_version),
-      QString::fromStdString(this->server_address + "/api/upload_minidump/"),
+      QString::fromStdString(this->server_address + "/submit"),
       QString::fromStdString(minidumps_abspath));
 #elif defined(Q_OS_MAC)
   throw TODOException("Crashup::initCrashUploader -- no OS_MAC support")

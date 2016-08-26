@@ -10,54 +10,55 @@ import shutil
 import os
 import sys
 import json
+import hashlib
+
+import kibana
 
 from .common import runapp, cleanup_minidumps
 if (not sys.platform.startswith('win')):
     from .common import check_if_minidump_upload_succeeded
 
 
-def get_set_of_tracebacks(platform):
-    import requests
-    request = requests.get(
-        "http://ec2-52-91-29-60.compute-1.amazonaws.com/api/list_minidumps/"
-        )
-    dumps = set()
-    for x in request.json():
-        if x['platform'] == platform:
-            dumps.add(x['id'])
-    return dumps
+def md5(fname):
+    hash_md5 = hashlib.md5()
+    with open(fname, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_md5.update(chunk)
+    return hash_md5.hexdigest().lower()
 
 
-def get_crash_report_id(platform, crash_type, dumps):
-    import requests
-    request = requests.get(
-        "http://ec2-52-91-29-60.compute-1.amazonaws.com/api/list_minidumps/"
-        )
-    for x in request.json():
-        if x['platform'] == platform:
-            if x['id'] in dumps:
-                dumps.remove(x['id'])
-            else:
-                if crash_type in str(x['report_text']):
-                    return x['id']
-    return -1
+def wait_until_minidump_is_uploading(timepoint, dumps, timeout=20., step=5.):
+    current = 0.
+    minidump_dir = os.path.join("crashdb", "reports")
+    minidump_file = os.listdir(minidump_dir)[0]
+    minidump_file = os.path.join(minidump_dir, minidump_file)
+    md5sum = md5(minidump_file)
+    while current < timeout:
+        time.sleep(step)
+        uploaded = kibana.crash_ids_from_timepoint(timepoint, product='demoapp', version='0.42')
+        delta = { k : v for k, v in uploaded.items() if k not in dumps }
+        if md5sum in delta.values():
+            return delta
+        else:
+            current += step
+    return None
 
 
 class WriteMinidumpTests(unittest.TestCase):
+    def check_minidump_uploaded_correctly_and_cleanup(self, timepoint, minidumps_before):
+        minidumps = wait_until_minidump_is_uploading(timepoint, minidumps_before)
+        self.assertIsNotNone(minidumps)
+
     @cleanup_minidumps
     def test_segfault(self):
         if sys.platform.startswith('win'):
-            dumps = get_set_of_tracebacks("windows")
+            begin = kibana.now() - 3 * 1000
+            dumps = kibana.crash_ids_from_timepoint(begin, product='demoapp', version='0.42')
             with runapp() as app:
                 app['segfaultButton'].click()
                 time.sleep(0.5)
                 self.assertEqual(len(os.listdir("crashdb/reports")), 1)
-            id_to_remove = get_crash_report_id(
-                "windows",
-                "on_segfaultButton_clicked",
-                dumps
-            )
-            self.assertTrue(id_to_remove >= 0)
+            self.check_minidump_uploaded_correctly_and_cleanup(begin, dumps)
         else:
             with runapp() as app:
                 app['segfaultButton'].click()
@@ -77,17 +78,13 @@ class WriteMinidumpTests(unittest.TestCase):
     @cleanup_minidumps
     def test_exception(self):
         if sys.platform.startswith('win'):
-            dumps = get_set_of_tracebacks("windows")
+            begin = kibana.now()
+            dumps = kibana.crash_ids_from_timepoint(begin, product='demoapp', version='0.42')
             with runapp() as app:
                 app['exceptionButton'].click()
                 time.sleep(0.5)
                 self.assertEqual(len(os.listdir("crashdb/reports")), 1)
-            id_to_remove = get_crash_report_id(
-                "windows",
-                "on_exceptionButton_clicked",
-                dumps
-            )
-            self.assertTrue(id_to_remove >= 0)
+            self.check_minidump_uploaded_correctly_and_cleanup(begin, dumps)
         else:
             with runapp() as app:
                 app['exceptionButton'].click()
@@ -107,18 +104,14 @@ class WriteMinidumpTests(unittest.TestCase):
     @cleanup_minidumps
     def test_segfault_in_library(self):
         if sys.platform.startswith('win'):
-            dumps = get_set_of_tracebacks("windows")
+            begin = kibana.now()
+            dumps = kibana.crash_ids_from_timepoint(begin, product='demoapp', version='0.42')
             with runapp() as app:
                 app['useMakeSegv'].click()
                 app['segfaultButton'].click()
                 time.sleep(0.5)
                 self.assertEqual(len(os.listdir("crashdb/reports")), 1)
-            id_to_remove = get_crash_report_id(
-                "windows",
-                "make_segfault",
-                dumps
-            )
-            self.assertTrue(id_to_remove >= 0)
+            self.check_minidump_uploaded_correctly_and_cleanup(begin, dumps)
         else:
             with runapp() as app:
                 app['useMakeSegv'].click()
@@ -139,18 +132,14 @@ class WriteMinidumpTests(unittest.TestCase):
     @cleanup_minidumps
     def test_exception_in_library(self):
         if sys.platform.startswith('win'):
-            dumps = get_set_of_tracebacks("windows")
+            begin = kibana.now()
+            dumps = kibana.crash_ids_from_timepoint(begin, product='demoapp', version='0.42')
             with runapp() as app:
                 app['useMakeSegv'].click()
                 app['exceptionButton'].click()
                 time.sleep(0.5)
                 self.assertEqual(len(os.listdir("crashdb/reports")), 1)
-            id_to_remove = get_crash_report_id(
-                "windows",
-                "make_cxxexception",
-                dumps
-            )
-            self.assertTrue(id_to_remove >= 0)
+            self.check_minidump_uploaded_correctly_and_cleanup(begin, dumps)
         else:
             with runapp() as app:
                 app['useMakeSegv'].click()
@@ -167,3 +156,4 @@ class WriteMinidumpTests(unittest.TestCase):
                 self.assertEqual(len(data),1)
                 remote_filename = data[0]["remote_filename"]
                 check_if_minidump_upload_succeeded(self,remote_filename)
+

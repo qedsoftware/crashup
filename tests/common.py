@@ -15,8 +15,6 @@ if (not sys.platform.startswith('win')):
     from fabric.api import env, run, cd, sudo
     from fabric.contrib.files import exists
 
-DEFAULT_HOSTSTRING = "root@ec2-52-91-29-60.compute-1.amazonaws.com"
-DEFAULT_PASSWORD = "Amp,aOmk"
 
 def runapp():
     if sys.platform.startswith('linux'):
