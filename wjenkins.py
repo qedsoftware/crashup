@@ -71,14 +71,38 @@ def install_dependencies():
     #commands += install_vstudio2015()
     commands += install_vstudio2013()
     #commands += install_qt_for_vstudio2015()
-    commands += install_qt_for_vstudio2013()
-    commands += install_winsdk()
+    commands += install_qt_for_vstudio2013_x86_64()
+    commands += install_qt_for_vstudio2013_i386()
+    #commands += install_winsdk()
     commands += install_ultravnc()
-    
+
     with hide('running'):
         run(commands)
 
-def install_dependency(url, dest, name, path, options):
+def send_install_requirements():
+    put_files(
+        'qt-installer-noninteractive-vs2013-32.qs',
+        'qt-installer-noninteractive-vs2013-64.qs',
+        zipname='deploy_preinstall',
+        remote_path='C:\Users\Administrator\Documents\desktop-crashup'
+    )
+
+def make_install_dependency_script(url, dest, name, path, options):
+    """Generates commands that download installer and install the software
+    Parameters
+    ----------
+    url : str
+        The installer will be downloaded from this url.
+    dest : str
+        The installer will be saved to file specified with this parameter.
+    name : str
+        Dependency name
+    path : str
+        Path checked to determine if dependency is installed right now.
+    options : str
+        Additional options passed to the installer.
+    """
+
     cmd = r'''
 if(!(Test-Path "%s")) {
     $url = "%s"
@@ -103,7 +127,7 @@ def install_cmake():
     cmake_path = r'''C:\Program Files (x86)\CMake\bin'''
     cmake_name = "CMake"
     cmake_options = "/qn "
-    return install_dependency(cmake_url, cmake_dest, cmake_name, cmake_path, cmake_options)
+    return make_install_dependency_script(cmake_url, cmake_dest, cmake_name, cmake_path, cmake_options)
 
 def install_python():
     python_url = "https://www.python.org/ftp/python/2.7.11/python-2.7.11.msi"
@@ -111,23 +135,31 @@ def install_python():
     python_path = "C:\Python27\python.exe"
     python_name = "Python"
     python_options = "/qn "
-    return install_dependency(python_url, python_dest, python_name, python_path, python_options)
+    return make_install_dependency_script(python_url, python_dest, python_name, python_path, python_options)
 
-def install_qt_for_vstudio2015():
+def install_qt_for_vstudio2015_x86_64():
     qt_url = "http://download.qt.io/official_releases/qt/5.6/5.6.0/qt-opensource-windows-x86-msvc2015_64-5.6.0.exe"
-    qt_dest = "C:\Users\Administrator\Documents\qtsetup.exe"
-    qt_path = "C:\Qt\Qt5.6.0\\5.6\msvc2015_64"
-    qt_name = "Qt (for VS 14.0 2015)"
-    qt_options = ""
-    return install_dependency(qt_url, qt_dest, qt_name, qt_path, qt_options)
+    qt_dest = r"C:\Users\Administrator\Documents\qtsetup_vs2015_64.exe"
+    qt_path = r"C:\Qt\Qt5.6.0\5.6\msvc2015_64"
+    qt_name = "Qt (for VS 14.0 2015, 64-bit)"
+    qt_options = ""         # TODO: use qt-installer-...-32.qs, modify it (installation path!) and use
+    return make_install_dependency_script(qt_url, qt_dest, qt_name, qt_path, qt_options)
 
-def install_qt_for_vstudio2013():
+def install_qt_for_vstudio2013_x86_64():
     qt_url = "http://download.qt.io/official_releases/qt/5.6/5.6.0/qt-opensource-windows-x86-msvc2013_64-5.6.0.exe"
-    qt_dest = "C:\Users\Administrator\Documents\qtsetup_vs2013.exe"
-    qt_path = "C:\Qt\Qt5.6.0\\5.6\msvc2013_64"
-    qt_name = "Qt (for VS 12.0 2013)"
-    qt_options = ""
-    return install_dependency(qt_url, qt_dest, qt_name, qt_path, qt_options)
+    qt_dest = r"C:\Users\Administrator\Documents\qtsetup_vs2013_64.exe"
+    qt_path = r"C:\Qt\Qt5.6.0\5.6\msvc2013_64"
+    qt_name = "Qt (for VS 12.0 2013, 64-bit)"
+    qt_options = "-ArgumentList @(\"--script\", \"C:\Users\Administrator\Documents\desktop-crashup\qt-installer-noninteractive-vs2013-64.qs\", \"--verbose\")"
+    return make_install_dependency_script(qt_url, qt_dest, qt_name, qt_path, qt_options)
+
+def install_qt_for_vstudio2013_i386():
+    qt_url = "http://download.qt.io/official_releases/qt/5.6/5.6.0/qt-opensource-windows-x86-msvc2013-5.6.0.exe"
+    qt_dest = r"C:\Users\Administrator\Documents\qtsetup_vs2013_32.exe"
+    qt_path = r"C:\Qt\Qt_5.6.0_vs2013_32bit"
+    qt_name = "Qt (for VS 12.0 2013, 32-bit)"
+    qt_options = "-ArgumentList @(\"--script\", \"C:\Users\Administrator\Documents\desktop-crashup\qt-installer-noninteractive-vs2013-32.qs\", \"--verbose\")"
+    return make_install_dependency_script(qt_url, qt_dest, qt_name, qt_path, qt_options)
 
 def install_winsdk():
     winsdk_url = "http://download.microsoft.com/download/6/A/2/6A2ECE81-C934-4E47-91CC-52DA00A65345/sdksetup.exe"
@@ -135,7 +167,7 @@ def install_winsdk():
     winsdk_path = "C:\Program Files (x86)\Windows Kits\\10"
     winsdk_name = "Windows SDK 10"
     winsdk_options = "/q "
-    return install_dependency(winsdk_url, winsdk_dest, winsdk_name, winsdk_path, winsdk_options)
+    return make_install_dependency_script(winsdk_url, winsdk_dest, winsdk_name, winsdk_path, winsdk_options)
 
 def install_ultravnc():
     ultravnc_url = "http://www.uvnc.com/component/jdownloads/finish/4-setup/291-ultravnc-1210-x64-setup/0.html"
@@ -143,7 +175,7 @@ def install_ultravnc():
     ultravnc_path = "C:\Program Files\UltraVNC"
     ultravnc_name = "UltraVNC"
     ultravnc_options = "-ArgumentList '/DIR=\"C:\Program Files\UltraVNC\"',\"/SILENT\",'/TYPE=\"UltraVNC Server Only\"',\"/LOG\" "
-    return install_dependency(ultravnc_url, ultravnc_dest, ultravnc_name, ultravnc_path, ultravnc_options)
+    return make_install_dependency_script(ultravnc_url, ultravnc_dest, ultravnc_name, ultravnc_path, ultravnc_options)
 
 def install_vstudio2015():
     vstudio_url = "http://download.microsoft.com/download/D/2/3/D23F4D0F-BA2D-4600-8725-6CCECEA05196/vs_community_ENU.exe"
@@ -182,6 +214,7 @@ if(!(Test-Path "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC")) {
 }
     ''' % (vstudio2013_url, vstudio2013_dest, vstudio2013_dest)
     return cmd
+
 
 
 def adjust_env():
@@ -328,6 +361,7 @@ rm %s\%s.zip
 
 
 def compile_google_breakpad():
+    # NOTE: We do not need Google Breakpad on Windows
     # TODO compile only when not present!
     pref = "C:\Users\Administrator\Documents\desktop-crashup\google-breakpad"
     cmd = r'''
@@ -359,6 +393,8 @@ this is because breakpad developers don't care about windows
 
 
 def compile_crashpad():
+    """Builds Crashpad for x86 and x64 (if Win64)
+    """
     pref = "C:\Users\Administrator\Documents\desktop-crashup\google-crashpad\crashpad"
     cmd = r'''
     cd desktop-crashup\google-crashpad\crashpad
@@ -429,6 +465,7 @@ def remote_build(hoststring, password):
     env.use_shell = False  # we don't have bash on windows
     env.always_use_pty = False  # to prevent truncating lines by the server
     with show('exceptions'):
+        send_install_requirements()
         install_dependencies()
         send_files()
         adjust_env()
