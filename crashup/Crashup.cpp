@@ -19,8 +19,7 @@
 
 namespace crashup {
 
-Crashup::Crashup(std::string working_dir, std::string server_address)
-    : _stats(working_dir, server_address) {
+Crashup::Crashup(std::string working_dir, std::string server_address) {
   this->working_dir = working_dir;
   this->server_address = server_address;
 #if defined(Q_OS_WIN32)
@@ -31,12 +30,19 @@ Crashup::Crashup(std::string working_dir, std::string server_address)
 #endif
 }
 
+void Crashup::init() {
+  /* get the breakpad / crashpad handler going -- minidumps written to a
+  requested dir throws exception if requested path is inaccessible */
+  this->initCrashHandler();
+
+  /* initiates CrashUploader, configured to upload onto server_address */
+  /* given to the crashup constructor */
+  this->initCrashUploader();
+}
+
 void Crashup::setAppName(const std::string &name) { this->app_name = name; }
 void Crashup::setAppVersion(const std::string &version) {
   this->app_version = version;
-}
-void Crashup::setAppPlatform(const std::string &platform) {
-  this->app_platform = platform;
 }
 
 std::string Crashup::makeInternalDirPath(const std::string &dirpath) {
@@ -155,14 +161,4 @@ void Crashup::uploadPendingMinidumps() {
     throw CrashupInitializationException("CrashUploader not initialized.");
 }
 
-void Crashup::sendUsageReport(const std::string &t, const std::string &d) {
-  this->_stats.send(std::map<std::string, std::string>{
-      {"event_type", t},
-      {"event_data", d},
-      {"app_name", this->app_name},
-      {"app_version", this->app_version},
-      {"app_platform", this->app_platform},
-      {"mac_address", "<not available yet>"},
-  });
-}
-}; // namespace crashup
+} // namespace crashup

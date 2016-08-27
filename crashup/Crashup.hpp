@@ -1,7 +1,4 @@
 #pragma once
-#include "SettingsWidget.hpp"
-#include "stats/Stats.hpp"
-#include "updates/Updates.hpp"
 #include <QObject>
 #include <QtCore/QProcess>
 #include <map>
@@ -13,11 +10,11 @@
 
 namespace crashpad {
 class CrashpadClient;
-};
+}
 namespace crash_handling {
 class CrashHandler;
 class CrashUploader;
-};
+}
 
 namespace crashup {
 
@@ -25,8 +22,7 @@ class Crashup {
 
 private:
   std::string working_dir, server_address;
-  std::string app_name, app_version, app_platform;
-  Stats _stats;
+  std::string app_name, app_version;
 #if defined(Q_OS_WIN32)
   crashpad::CrashpadClient *_crashpad_client;
 #elif defined(Q_OS_LINUX)
@@ -35,23 +31,18 @@ private:
 #endif
 
   std::string makeInternalDirPath(const std::string &);
+  void initCrashHandler();
+  void initCrashUploader();
 
 public:
   Crashup(std::string working_dir, std::string server_address);
+  void init();
 
   void setAppName(const std::string &);
   void setAppVersion(const std::string &);
-  void setAppPlatform(const std::string &);
 
-  void initCrashHandler();
   void writeMinidump();
-  void initCrashUploader();
   void uploadPendingMinidumps();
-  void sendUsageReport(const std::string &, const std::string &);
-
-  SettingsWidget &createSettingsWidget();
-  std::string getFileRevisions();        // for stats and crash handler
-  void setPollingInterval(int interval); // for SettingsWidget
 };
 
-}; // namespace crashup
+} // namespace crashup

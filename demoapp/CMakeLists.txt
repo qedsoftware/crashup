@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(demoapp)
+
+set(DESKTOP_CRASHUP_PATH ${CMAKE_CURRENT_LIST_DIR}/../)
+
 if (MSVC)
   # force linking UCRT statically ("/MTd" or "/MT" flag in "CL.exe")
   # because google breakpad compilation links them statically and we don't
@@ -33,71 +36,49 @@ target_link_libraries (CrashingWidget Qt5::Widgets)
 add_library(WidgetTracker WidgetTracker.cpp)
 target_link_libraries (WidgetTracker Qt5::Widgets)
 
+############################################################################
 
-############################################################################
-### path to desktop_crashup project ########################################
-############################################################################
-set(DESKTOP_CRASHUP_PATH ${CMAKE_CURRENT_LIST_DIR}/../)
-
-############################################################################
-### path to google crashpad  ###############################################
-############################################################################
-set(CRASHPAD_PATH ${DESKTOP_CRASHUP_PATH}google-crashpad/crashpad/)
-include_directories(${CRASHPAD_PATH})
-include_directories(${CRASHPAD_PATH}/third_party/mini_chromium/mini_chromium/)
-
-############################################################################
-### set path to the /src/ directory in your google-breakpad installation ###
-### + include this directory ###############################################
-############################################################################
-set(BREAKPAD_SRC_PATH ${DESKTOP_CRASHUP_PATH}/google-breakpad/src/)
-include_directories(${BREAKPAD_SRC_PATH})
+#
+# Setup Crashpad / Breakpad
+#
+if (MSVC)
+    set(CRASHPAD_PATH ${DESKTOP_CRASHUP_PATH}google-crashpad/crashpad/)
+    include_directories(${CRASHPAD_PATH})
+    include_directories(${CRASHPAD_PATH}/third_party/mini_chromium/mini_chromium/)
+elseif (UNIX)
+    set(BREAKPAD_PATH ${DESKTOP_CRASHUP_PATH}/google-breakpad)
+    include_directories(${BREAKPAD_PATH}/include/breakpad)
+    link_directories(${BREAKPAD_PATH}/lib)
+endif ()
 
 add_library(Crashup ../crashup/Crashup.cpp)
 target_link_libraries (Crashup Qt5::Core)
 
-add_library(Stats ../crashup/stats/Stats.cpp)
-add_library(Downloader ../crashup/updates/Downloader.cpp)
-target_link_libraries (Downloader Qt5::Core)
-target_link_libraries (Downloader Qt5::Network)
-target_link_libraries (Stats Qt5::Core)
-target_link_libraries (Stats Qt5::Network)
-
-
-#################################
-### uploading crashes linking ###
-#################################
+#
+# Crash handling and uploading for Linux
+#
 if (UNIX)
+  # Uploading...
   add_library(LibcurlWrapper ${DESKTOP_CRASHUP_PATH}/crashup/crash_handler/libcurl_wrapper)
   target_link_libraries(LibcurlWrapper ${CMAKE_DL_LIBS})
+
   add_library(GoogleCrashUploader ${DESKTOP_CRASHUP_PATH}/crashup/crash_handler/google_crashdump_uploader)
   target_link_libraries(GoogleCrashUploader LibcurlWrapper)
-endif (UNIX)
 
-add_library(CrashUploader ${DESKTOP_CRASHUP_PATH}/crashup/crash_handler/CrashUploader.cpp)
-if (UNIX)
-  target_link_libraries (CrashUploader GoogleCrashUploader)
-endif (UNIX)
-target_link_libraries (CrashUploader Qt5::Core)
+  add_library(CrashUploader ${DESKTOP_CRASHUP_PATH}/crashup/crash_handler/CrashUploader.cpp)
+  target_link_libraries (CrashUploader GoogleCrashUploader Qt5::Core)
 
-add_library(CrashHandler ../crashup/crash_handler/CrashHandler.cpp)
-############################################################################
-### breakpad static client library #########################################
-############################################################################
-if (MSVC)
-    target_link_libraries (CrashHandler ${BREAKPAD_SRC_PATH}/client/windows/Debug/lib/common.lib)
-    target_link_libraries (CrashHandler ${BREAKPAD_SRC_PATH}/client/windows/Debug/lib/crash_generation_client.lib)
-    target_link_libraries (CrashHandler ${BREAKPAD_SRC_PATH}/client/windows/Debug/lib/crash_generation_server.lib)
-    target_link_libraries (CrashHandler ${BREAKPAD_SRC_PATH}/client/windows/Debug/lib/crash_report_sender.lib)
-    target_link_libraries (CrashHandler ${BREAKPAD_SRC_PATH}/client/windows/Debug/lib/exception_handler.lib)
-    target_link_libraries (CrashHandler ${BREAKPAD_SRC_PATH}/client/windows/Debug/lib/processor_bits.lib)
-else ()
-    target_link_libraries (CrashHandler ${BREAKPAD_SRC_PATH}/client/linux/libbreakpad_client.a)
+  # Handling crashes...
+  add_library(CrashHandler ../crashup/crash_handler/CrashHandler.cpp)
+  target_link_libraries (CrashHandler libbreakpad_client.a Qt5::Core ${CMAKE_THREAD_LIBS_INIT})
+
+  target_link_libraries (Crashup CrashHandler CrashUploader)
 endif ()
 
-############################################################################
-### crashpad static client library #########################################
-############################################################################
+#
+# Using Crashpad in Windows builds
+#   TODO: use Hunter for this
+#
 if (MSVC)
     if (CMAKE_SIZEOF_VOID_P EQUAL 4)       # 32-bit architecture
         set(CRASHPAD_BUILD_PATH ${CRASHPAD_PATH}out/Debug)
@@ -118,18 +99,20 @@ if (MSVC)
     target_link_libraries (Crashup ${CRASHPAD_BUILD_PATH}/obj/third_party/mini_chromium/mini_chromium/base/base.lib)
 endif ()
 
-target_link_libraries (CrashHandler Qt5::Core)
-target_link_libraries (CrashHandler ${CMAKE_THREAD_LIBS_INIT})
+############################################################################
 
+#
+# MakeSegv library
+#
 add_library(MakeSegv SHARED MakeSegv.cpp)
 target_link_libraries(MakeSegv Qt5::Core)
 
+#
+# demoapp (application for generating crashes)
+#          should be called crashapp ;)
+#
 add_executable(demoapp main.cpp)
 target_link_libraries (demoapp CrashingWidget)
 target_link_libraries (demoapp WidgetTracker)
 target_link_libraries (demoapp Crashup)
-target_link_libraries (demoapp Stats)
-target_link_libraries (demoapp Downloader)
-target_link_libraries (demoapp CrashHandler)
-target_link_libraries (demoapp CrashUploader)
 target_link_libraries (demoapp MakeSegv)

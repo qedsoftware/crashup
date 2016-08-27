@@ -1,11 +1,12 @@
 #include "CrashingWidget.hpp"
-#include "../../crashup/updates/Downloader.hpp"
 #include "ui_CrashingWidget.h"
 #include "MakeSegv.hpp"
 
 #include <thread>
 
 #include <signal.h>
+
+#include <QMessageBox>
 
 CrashingWidget::CrashingWidget(
     std::function<void(std::string, std::string)> logEventCallback,
@@ -45,14 +46,15 @@ void CrashingWidget::on_segfaultButton_clicked() {
 }
 
 void CrashingWidget::on_statsButton_clicked() {
-  logEvent("message_entered_by_user",
-           ui->textEdit->toPlainText().toUtf8().constData());
+  QMessageBox mbox;
+  mbox.setText("Sending stats is unavailable...");
+  mbox.exec();
 }
 
 void CrashingWidget::on_downloadButton_clicked() {
-  Downloader *d = new Downloader(ui->downloadDirectory->toPlainText(),
-                                 ui->url->toPlainText());
-  d->downloadFile();
+  QMessageBox mbox;
+  mbox.setText("Downloading is unavailable...");
+  mbox.exec();
 }
 
 void CrashingWidget::on_uploadButton_clicked() { uploadMinidumpsFromDir(); }

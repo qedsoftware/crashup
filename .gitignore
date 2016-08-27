@@ -1,1 +1,6 @@
 *.pyc
+
+# directories that are used for Breakpad
+breakpad/
+google-breakpad/
+depot_tools/

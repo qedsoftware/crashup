@@ -36,24 +36,12 @@ int main(int argc, char *argv[]) {
 
   crashup.setAppName("demoapp");
   crashup.setAppVersion("0.42");
-#if defined(Q_OS_WIN32)
-  crashup.setAppPlatform("windows");
-#else
-  crashup.setAppPlatform("linux");
-#endif
-  /* get the breakpad / crashpad handler going -- minidumps written to a
-  requested dir throws exception if requested path is inaccessible */
-  crashup.initCrashHandler();
 
-  /* initiates CrashUploader, configured to upload onto server_address */
-  /* given to the crashup constructor */
-  crashup.initCrashUploader();
+  // initialize Crashup internals
+  crashup.init();
 
-  CrashingWidget w(
-      [&](std::string event_name, std::string event_data) {
-        crashup.sendUsageReport(event_name, event_data);
-      },
-      [&]() { crashup.uploadPendingMinidumps(); });
+  CrashingWidget w([&](std::string event_name, std::string event_data) {},
+                   [&]() { crashup.uploadPendingMinidumps(); });
   w.show();
   w.activateWindow();
   return demoapp.exec();

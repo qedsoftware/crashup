@@ -98,7 +98,7 @@ def remote_build(hoststring, password):
         run('sudo apt-get -y build-dep python-imaging')
         pkgs = """
         libtiff5-dev libjpeg8-dev zlib1g-dev libfreetype6-dev liblcms2-dev
-        libwebp-dev tcl8.6-dev tk8.6-dev python-tk tar xvfb cmake make
+        libwebp-dev tcl8.6-dev tk8.6-dev python-tk tar git xvfb cmake make
         python-pip libx11-dev python-virtualenv libjpeg-dev
         qt5-default qttools5-dev-tools cmake=3.2.2-2~ubuntu14.04.1~ppa1
         """
@@ -110,7 +110,7 @@ def remote_build(hoststring, password):
         if not fabric.contrib.files.exists('~/desktop-crashup'):
             run('mkdir ~/desktop-crashup')
         things_to_put = [
-            'demoapp', 'crashup', 'tests', 'build_linux.py',
+            'demoapp', 'crashup', 'tests', 'scripts', 'build_linux.py',
             'qt-installer-noninteractive.qs',
         ]
         things_to_put_lazy = ['google-breakpad']

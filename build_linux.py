@@ -46,6 +46,8 @@ def install_requirements():
     except:
         do_call("pip", "install", "requests")
 
+    do_call('./scripts/build-breakpad.sh')
+
 
 def run_clang_format():
     cmd = (
