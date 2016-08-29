@@ -92,7 +92,7 @@ def run_tests():
 
 if __name__ == "__main__":
     if not sys.platform.startswith('linux'):
-        print "TODO: support systems other than linux"
+        print "Check other scripts for different platform."
     else:
         install_requirements()
         build_app()
