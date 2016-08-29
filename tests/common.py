@@ -9,6 +9,9 @@ import shutil
 import os
 import functools
 import time
+import hashlib
+
+import kibana
 
 from .widget_tracker import WidgetTracker
 if (not sys.platform.startswith('win')):
@@ -48,31 +51,35 @@ def cleanup_minidumps(func):
     return newfunc
 
 
+def md5(fname):
+    hash_md5 = hashlib.md5()
+    with open(fname, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_md5.update(chunk)
+    return hash_md5.hexdigest().lower()
 
-def check_if_minidump_upload_succeeded(self, remote_filename):
-    hoststring = os.getenv('CRASHUP_TEST_HOSTSTRING', DEFAULT_HOSTSTRING)
-    password = os.getenv('CRASHUP_TEST_PASSWORD', DEFAULT_PASSWORD)
 
-    env.host_string = hoststring
-    env.password = password
-    env.abort_on_prompts = True
-    env.reject_unknown_hosts = False
+def wait_until_minidump_is_uploading(timepoint, dumps, timeout=20., step=5.):
+    current = 0.
+    if sys.platform.startswith('win'):
+        minidump_dir = os.path.join("crashdb", "reports")
+    elif sys.platform.startswith('linux'):
+        minidump_dir = os.path.join("minidumps")
+    else:
+        raise Exception("This OS is unsupported.")
 
-    date_foldername = time.strftime("%Y%m%d")
-    with cd("/home/socorro/crashes/"):
-        res = remote_filename.split("/")
-        self.assertTrue(exists(date_foldername+"/name/"+remote_filename+".dump", use_sudo=True))
-        self.assertTrue(exists(date_foldername+"/name/"+remote_filename+".json", use_sudo=True))
-        # file removing, with their corresponding directory if it does not contain anything else
-        sudo("rm -f "+date_foldername+"/name/"+remote_filename+".dump")
-        self.assertFalse(exists(date_foldername+"/name/"+remote_filename+".dump", use_sudo=True))
-        sudo("rm -f "+date_foldername+"/name/"+remote_filename+".json")
-        self.assertFalse(exists(date_foldername+"/name/"+remote_filename+".json", use_sudo=True))
+    minidump_files = [f for f in os.listdir(minidump_dir) if f not in ['.minidumps.json']]
+    if len(minidump_files) != 1:
+        raise Exception("Don't know which minidump to check!")
+    minidump_file = os.path.join(minidump_dir, minidump_files[0])
+    md5sum = md5(minidump_file)
+    while current < timeout:
+        time.sleep(step)
+        uploaded = kibana.crash_ids_from_timepoint(timepoint, product='demoapp', version='0.42')
+        delta = { k : v for k, v in uploaded.items() if k not in dumps and md5sum == v }
+        if len(delta) > 0:
+            return delta
+        else:
+            current += step
+    return None
 
-        # checking for regular files or directories to avoid finding occasional broken symlinks
-        if (len(run("find ./"+date_foldername+"/name/"+res[0]+"/"+res[1]+"/ -type f || -type d")) == 0):
-            sudo("rm -rf "+date_foldername+"/name/"+res[0]+"/"+res[1]+"/")
-        if (len(run("find ./"+date_foldername+"/name/"+res[0]+"/ -type f || -type d")) == 0):
-            sudo("rm -rf "+date_foldername+"/name/"+res[0]+"/")
-        if (len(run("find ./"+date_foldername+"/name/ -type f || -type d")) == 0):
-            sudo("rm -rf "+date_foldername+"/")

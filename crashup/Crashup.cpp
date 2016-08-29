@@ -97,18 +97,8 @@ void Crashup::initCrashHandler() {
   std::string minidumps_abspath = makeInternalDirPath("minidumps");
   this->_crash_handler = crash_handling::CrashHandler::instance();
   this->_crash_handler->init(minidumps_abspath);
-// this->_crash_handler->setReportCrashesToSystem(true); /*
-// false
-// --> every crash is treated as successfully handled by breakpad (default
-// choice here) */
-/* true  --> crashes unsuccessfully handled by breakpad (ExceptionHandler
-* returning success = false */
-/* 			 to the callback function) are treated as unhandled and
-* can
-* be subsequently handled */
-/*			 by another handler, they are being reported to the
-* system
-*/
+// this->_crash_handler->setReportCrashesToSystem(true);
+
 #elif defined(Q_OS_MAC)
   throw TODOException("Crashup::initCrashHandler -- no OS_MAC support")
 #endif

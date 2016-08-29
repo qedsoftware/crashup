@@ -12,6 +12,14 @@ class CrashHandler {
 public:
   static CrashHandler *instance();
   void init(const std::string &report_minidumps_path);
+
+  /**
+   * Sets whether crashes should be reported to OS.
+   *
+   * @param toReport: False if we should never report crashes to OS,
+   *                  True if we should report crashes to OS when
+   *                  Exception handler returns failure.
+   */
   void setReportCrashesToSystem(bool toReport);
   bool writeMinidump();
 

@@ -419,7 +419,8 @@ def send_files():
         run('md -Force C:\Users\Administrator\Documents\desktop-crashup')
     print INDENT + "Sending source tree to remote host..."
     put_files(
-        'demoapp', 'crashup', 'tests', 'build_linux.py', 'build_windows.py',
+        'demoapp', 'crashup', 'tests', 'scripts',
+        'build_linux.py', 'build_windows.py',
         zipname='deploy',
         remote_path='C:\Users\Administrator\Documents\desktop-crashup'
     )

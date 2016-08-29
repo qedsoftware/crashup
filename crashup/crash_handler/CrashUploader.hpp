@@ -54,8 +54,9 @@ private:
   QString product_name, product_version;
   QString crash_server;
   QDir saved_minidumps_dir;
-  void saveJson(const QString &local_minidump_filename,
-                const QString &remote_minidump_filename);
+  void add_minidump_to_metadata(const QString &local_minidump_filename,
+                                const QString &remote_minidump_filename);
+  QJsonArray get_minidumps_metadata();
   Q_DISABLE_COPY(CrashUploader)
 };
 };

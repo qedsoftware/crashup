@@ -79,8 +79,21 @@ CrashUploader::~CrashUploader() {
   uploadingThread.wait();
 }
 
-void CrashUploader::saveJson(const QString &local_minidump_filename,
-                             const QString &remote_minidump_filename) {
+QJsonArray CrashUploader::get_minidumps_metadata() {
+  QString json_file_path =
+      this->saved_minidumps_dir.filePath(this->minidump_metadata_filename);
+  QFile json_file(json_file_path);
+  json_file.open(QFile::ReadOnly);
+  QString file_content = json_file.readAll();
+  QJsonDocument qjson_doc = QJsonDocument::fromJson(file_content.toUtf8());
+  QJsonArray qjson_array = qjson_doc.array();
+  json_file.close();
+  return qjson_array;
+}
+
+void CrashUploader::add_minidump_to_metadata(
+    const QString &local_minidump_filename,
+    const QString &remote_minidump_filename) {
   QString json_file_path =
       this->saved_minidumps_dir.filePath(this->minidump_metadata_filename);
   QFile json_file(json_file_path);
@@ -119,7 +132,7 @@ void CrashUploader::uploadFinished(bool result,
     if (rx_filename.indexIn(http_response_body) != -1) {
       remote_relative_path += rx_filename.cap(1);
     }
-    saveJson(minidump_filename, remote_relative_path);
+    add_minidump_to_metadata(minidump_filename, remote_relative_path);
   } else {
     // possibly doing something else in case of failure, some retry procedure or
     // something
@@ -133,10 +146,22 @@ void CrashUploader::uploadPendingMinidumps() {
   QDir q_minidumps_dir = this->saved_minidumps_dir;
   q_minidumps_dir.setNameFilters(QStringList() << "*.dmp");
   QFileInfoList fileList = q_minidumps_dir.entryInfoList();
+  QJsonArray metadata = this->get_minidumps_metadata();
   for (QFileInfoList::iterator it = fileList.begin(); it != fileList.end();
        ++it) {
+    QString path = (*it).absoluteFilePath();
+    bool uploaded = false;
+    for (QJsonArray::iterator it = metadata.begin(); it != metadata.end();
+         it++) {
+      if ((*it).toObject().value("local_filename").toString() == path) {
+        uploaded = true;
+        break;
+      }
+    }
 #if defined(Q_OS_LINUX)
-    emit uploadMinidump((*it).absoluteFilePath());
+    if (!uploaded) {
+      emit uploadMinidump(path);
+    }
 #endif
   }
 }
