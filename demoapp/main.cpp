@@ -27,7 +27,7 @@ int main(int argc, char *argv[]) {
     wt = std::unique_ptr<WidgetTracker>(new WidgetTracker(&demoapp));
   }
 
-  /* just for the testing, generally these strings should be given my the user
+  /* just for the testing, generally these strings should be given by the user
    */
   std::string working_dir = ".";
   std::string server_address = "http://socorro.qed.ai:5000";

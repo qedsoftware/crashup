@@ -1,13 +1,13 @@
+#include <QtGlobal>
+
+#if defined(Q_OS_LINUX)
+
 #include "CrashHandler.hpp"
 #include <QtCore/QProcess>
 
 #include <stdio.h>
 
-#if defined(Q_OS_LINUX)
 #include "client/linux/handler/exception_handler.h"
-#elif defined(Q_OS_WIN32)
-#include "client/windows/handler/exception_handler.h"
-#endif
 
 namespace crash_handling {
 
@@ -35,34 +35,14 @@ bool CrashHandlerPrivate::bReportCrashesToSystem = false;
 /* dumpCallback Function -- OS dependant */
 /*****************************************/
 
-#if defined(Q_OS_WIN32)
-bool dumpCallback(const wchar_t *_dump_dir, const wchar_t *_minidump_id,
-                  void *context, EXCEPTION_POINTERS *exinfo,
-                  MDRawAssertionInfo *assertion, bool success)
-#elif defined(Q_OS_LINUX)
 bool dumpCallback(const google_breakpad::MinidumpDescriptor &md, void *context,
-                  bool success)
-#elif defined(Q_OS_MAC)
-bool dumpCallback(const char *_dump_dir, const char *_minidump_id,
-                  void *context, bool success)
-#endif
-{
+                  bool success) {
   Q_UNUSED(context);
-#if defined(Q_OS_WIN32)
-  Q_UNUSED(_dump_dir);
-  Q_UNUSED(_minidump_id);
-  Q_UNUSED(assertion);
-  Q_UNUSED(exinfo);
-#endif
   qDebug("BreakpadQt crash");
 
-// printing to stdout makes the string is printed nither to stdout nor stderr
-// this made hard to read minidump from program output
-#if defined(Q_OS_LINUX)
+  // printing to stdout makes the string is printed nither to stdout nor stderr
+  // this made hard to read minidump from program output
   fprintf(stderr, "Minidump saved as: %s\n", md.path());
-#elif defined(Q_OS_WIN32)
-  fprintf(stderr, "Minidump saved as: %ls\n", _dump_dir);
-#endif
 
   /*
   NO STACK USE, NO HEAP USE THERE !!!
@@ -79,17 +59,6 @@ void CrashHandlerPrivate::initCrashHandlerPrivate(
     return;
   }
 
-#if defined(Q_OS_WIN32)
-  std::wstring pathAsStr(report_minidumps_dirpath.begin(),
-                         report_minidumps_dirpath.end());
-  pHandler =
-      new google_breakpad::ExceptionHandler(pathAsStr,
-                                            /*FilterCallback*/ 0, dumpCallback,
-                                            /*context*/
-                                            nullptr, true);
-// throw TODOException(
-//    "CrashHandlerPrivate::initCrashHandlerPrivate -- no OS_WIN support")
-#elif defined(Q_OS_LINUX)
   google_breakpad::MinidumpDescriptor md(report_minidumps_dirpath);
   pHandler = new google_breakpad::ExceptionHandler(
       md,           /* MinidumpDescriptor */
@@ -111,10 +80,6 @@ void CrashHandlerPrivate::initCrashHandlerPrivate(
                             -1 => in-process minidump generation will
                     */
       );
-#elif defined(Q_OS_MAC)
-  throw TODOException(
-      "CrashHandlerPrivate::initCrashHandlerPrivate -- no OS_MAC support");
-#endif
 }
 
 /************************************************************************/
@@ -147,4 +112,6 @@ bool CrashHandler::writeMinidump() {
   }
   return res;
 }
-};
+}
+
+#endif

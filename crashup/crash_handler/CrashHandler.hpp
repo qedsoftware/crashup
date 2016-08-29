@@ -1,5 +1,4 @@
-#if !defined(CRASHHANDLER_HPP)
-#define CRASHHANDLER_HPP
+#pragma once
 
 #include <string>
 #include <QCoreApplication>
@@ -7,10 +6,23 @@
 namespace crash_handling {
 
 class CrashHandlerPrivate;
+
+/**
+ * Controls crash handling on Linux.
+ */
 class CrashHandler {
 
 public:
+  /**
+   * Returns instance of CrashHandler.
+   */
   static CrashHandler *instance();
+
+  /**
+   * Initializes crash handling.
+   *
+   * @param report_minidumps_path: Path where minidumps will be stored.
+   */
   void init(const std::string &report_minidumps_path);
 
   /**
@@ -21,6 +33,10 @@ public:
    *                  Exception handler returns failure.
    */
   void setReportCrashesToSystem(bool toReport);
+
+  /**
+   * Writes minidump on demand (the app does not crash).
+   */
   bool writeMinidump();
 
 private:
@@ -29,5 +45,4 @@ private:
   CrashHandlerPrivate *pPrivCrashHandler;
   Q_DISABLE_COPY(CrashHandler)
 };
-};
-#endif
+}

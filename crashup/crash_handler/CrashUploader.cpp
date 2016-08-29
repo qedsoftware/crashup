@@ -92,8 +92,7 @@ QJsonArray CrashUploader::get_minidumps_metadata() {
 }
 
 void CrashUploader::add_minidump_to_metadata(
-    const QString &local_minidump_filename,
-    const QString &remote_minidump_filename) {
+    const QString &local_minidump_filename, const QString &remote_minidump_id) {
   QString json_file_path =
       this->saved_minidumps_dir.filePath(this->minidump_metadata_filename);
   QFile json_file(json_file_path);
@@ -103,7 +102,7 @@ void CrashUploader::add_minidump_to_metadata(
   QJsonArray qjson_array = qjson_doc.array();
 
   QJsonObject qjson_obj_1{{"local_filename", local_minidump_filename},
-                          {"remote_filename", remote_minidump_filename}};
+                          {"remote_filename", remote_minidump_id}};
   qjson_array << qjson_obj_1;
   json_file.resize(0);
   json_file.write(QJsonDocument(qjson_array).toJson(QJsonDocument::Indented));
@@ -121,25 +120,16 @@ void CrashUploader::uploadFinished(bool result,
       throw UnexpectedHttpResponseException();
     }
     QString remote_relative_path = "";
-    QRegExp rx("CrashID=.{2}-(.{2})(.{2}).*\\n");
-    if (rx.indexIn(http_response_body) != -1) {
-      remote_relative_path += rx.cap(1);
-      remote_relative_path += "/";
-      remote_relative_path += rx.cap(2);
-      remote_relative_path += "/";
-    }
     QRegExp rx_filename("CrashID=.{2}-((.*))\\n");
     if (rx_filename.indexIn(http_response_body) != -1) {
       remote_relative_path += rx_filename.cap(1);
     }
     add_minidump_to_metadata(minidump_filename, remote_relative_path);
   } else {
-    // possibly doing something else in case of failure, some retry procedure or
-    // something
+    // TODO: possibly doing something in case of failure, some retry procedure?
     throw TODOException("CrashUploader::uploadFinished -- failed upload. TODO "
                         "retry procedure.");
   }
-  return;
 }
 
 void CrashUploader::uploadPendingMinidumps() {

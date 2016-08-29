@@ -7,6 +7,7 @@
 #include <iostream>
 
 #if defined(Q_OS_WIN32)
+// TODO: fix this when Hunter :: Crashpad will be working.
 #include "../../google-crashpad/crashpad/client/crash_report_database.h"
 #include "../../google-crashpad/crashpad/client/crashpad_client.h"
 #include "../../google-crashpad/crashpad/client/crashpad_info.h"
@@ -44,6 +45,9 @@ void Crashup::setAppName(const std::string &name) { this->app_name = name; }
 void Crashup::setAppVersion(const std::string &version) {
   this->app_version = version;
 }
+void Crashup::setRateLimit(bool throttle) { this->throttle = throttle; }
+
+////////////////////////////////////////////////////////////////////////////
 
 std::string Crashup::makeInternalDirPath(const std::string &dirpath) {
   QString final_dir_path = QDir(QString::fromStdString(this->working_dir))
@@ -69,6 +73,7 @@ void Crashup::initCrashHandler() {
 #if defined(Q_OS_WIN32)
   // initialize crash handler
   this->_crashpad_client = new crashpad::CrashpadClient();
+  // TODO: This path should be configurable
   std::wstring handler(L"C:\\Users\\Administrator\\Documents\\desktop-"
                        L"crashup\\google-crashpad\\crashpad\\out\\Debug_"
                        L"x64\\crashpad_handler.exe");
@@ -76,16 +81,20 @@ void Crashup::initCrashHandler() {
   std::copy(this->working_dir.begin(), this->working_dir.end(),
             std::back_inserter(crashdb));
   crashdb += L"\\crashdb";
+
+  // additional options for 'crashpad_handler' executable:
+  std::vector<std::string> handler_options;
+  if (!this->throttle) {
+    handler_options.push_back("--no-rate-limit");
+  }
+
   int res = _crashpad_client->StartHandler(
       base::FilePath(handler), base::FilePath(crashdb),
-      this->server_address + "/submit",
+      this->server_address + this->upload_path,
       // data to send with POST requests uploading minidumps:
       std::map<std::string, std::string>{{"ProductName", this->app_name},
                                          {"Version", this->app_version}},
-      // additional options for 'crashpad_handler' executable:
-      std::vector<std::string>{"--no-rate-limit"}, false);
-  // TODO make --no-rate-limit configurable from outside
-  // --no-rate-limit  <-- disable throttling upload attempts to 1/hour
+      handler_options, false);
   if (!res) {
     throw CrashupInitializationException("CrashpadClient::StartHandler failed");
   }
@@ -98,21 +107,8 @@ void Crashup::initCrashHandler() {
   this->_crash_handler = crash_handling::CrashHandler::instance();
   this->_crash_handler->init(minidumps_abspath);
 // this->_crash_handler->setReportCrashesToSystem(true);
-
 #elif defined(Q_OS_MAC)
   throw TODOException("Crashup::initCrashHandler -- no OS_MAC support")
-#endif
-}
-
-void Crashup::writeMinidump() {
-#if defined(Q_OS_LINUX)
-  if (_crash_handler != nullptr)
-    _crash_handler->writeMinidump();
-  else
-    throw CrashupInitializationException("CrashHandler not initialized.");
-#else
-  throw TODOException(
-      "On-demand minidump writing is not implemented on other OS.");
 #endif
 }
 
@@ -135,10 +131,24 @@ void Crashup::initCrashUploader() {
   this->_crash_uploader = new crash_handling::CrashUploader(
       QString::fromStdString(this->app_name),
       QString::fromStdString(this->app_version),
-      QString::fromStdString(this->server_address + "/submit"),
+      QString::fromStdString(this->server_address + this->upload_path),
       QString::fromStdString(minidumps_abspath));
 #elif defined(Q_OS_MAC)
   throw TODOException("Crashup::initCrashUploader -- no OS_MAC support")
+#endif
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+void Crashup::writeMinidump() {
+#if defined(Q_OS_LINUX)
+  if (_crash_handler != nullptr)
+    _crash_handler->writeMinidump();
+  else
+    throw CrashupInitializationException("CrashHandler not initialized.");
+#else
+  throw TODOException(
+      "On-demand minidump writing is not implemented on other OS.");
 #endif
 }
 
