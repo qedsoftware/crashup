@@ -8,11 +8,11 @@
 
 #if defined(Q_OS_WIN32)
 // TODO: fix this when Hunter :: Crashpad will be working.
-#include "../../google-crashpad/crashpad/client/crash_report_database.h"
-#include "../../google-crashpad/crashpad/client/crashpad_client.h"
-#include "../../google-crashpad/crashpad/client/crashpad_info.h"
-#include "../../google-crashpad/crashpad/client/settings.h"
-#include "../../google-crashpad/crashpad/third_party/mini_chromium/mini_chromium/base/files/file_path.h"
+#include "client/crash_report_database.h"
+#include "client/crashpad_client.h"
+#include "client/crashpad_info.h"
+#include "client/settings.h"
+#include "base/files/file_path.h"
 #elif defined(Q_OS_LINUX)
 #include "crash_handler/CrashHandler.hpp"
 #include "crash_handler/CrashUploader.hpp"

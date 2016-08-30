@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 #if defined(Q_OS_WIN32)
-#include "../../google-crashpad/crashpad/client/simple_string_dictionary.h"
+#include "client/simple_string_dictionary.h"
 #endif
 
 #if defined(Q_OS_WIN32)
