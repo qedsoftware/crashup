@@ -16,7 +16,6 @@ else ()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif ()
 
-hunter_add_package(Qt) # Qt5Widgets
 find_package(Qt5Widgets REQUIRED) # Qt5::Widgets, Qt5::Core
 
 set(CMAKE_AUTOMOC ON)
@@ -39,13 +38,12 @@ if(UNIX)
     set(BREAKPAD_PATH ${DESKTOP_CRASHUP_PATH}/google-breakpad)
     include_directories(${BREAKPAD_PATH}/include/breakpad)
     link_directories(${BREAKPAD_PATH}/lib)
-endif ()
-
-hunter_add_package(crashpad)
-find_package(crashpad CONFIG REQUIRED)
+elseif (WIN32)
+    hunter_add_package(crashpad)
+    find_package(crashpad CONFIG REQUIRED)
+endif()
 
 add_library(Crashup ../crashup/Crashup.cpp)
-target_link_libraries(Crashup PUBLIC crashpad::crashpad_client Qt5::Core)
 
 #
 # Crash handling and uploading for Linux
@@ -65,9 +63,18 @@ if (UNIX)
   add_library(CrashHandler ../crashup/crash_handler/CrashHandler.cpp)
   target_link_libraries (CrashHandler libbreakpad_client.a Qt5::Core ${CMAKE_THREAD_LIBS_INIT})
 
-  target_link_libraries (Crashup CrashHandler CrashUploader)
-endif ()
+  target_link_libraries (Crashup Qt5::Core CrashHandler CrashUploader)
 
+elseif (WIN32)
+  target_link_libraries(Crashup PUBLIC crashpad::crashpad_client Qt5::Core)
+  add_custom_command(TARGET Crashup POST_BUILD
+    COMMAND "${CMAKE_COMMAND}" -E copy
+        "$<TARGET_FILE:crashpad::crashpad_handler>"
+        "$<TARGET_FILE_DIR:Crashup>/$<TARGET_FILE_NAME:crashpad::crashpad_handler>"
+    COMMENT "Copying Crashpad Handler"
+  )
+
+endif()
 #
 # MakeSegv library
 #

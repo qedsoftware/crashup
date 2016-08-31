@@ -1,5 +1,6 @@
 #include "Crashup.hpp"
 #include "exceptions.hpp"
+#include <QCoreApplication>
 #include <QDebug>
 #include <QDir>
 #include <QString>
@@ -23,6 +24,7 @@ namespace crashup {
 Crashup::Crashup(std::string working_dir, std::string server_address) {
   this->working_dir = working_dir;
   this->server_address = server_address;
+  this->executable_directory = QCoreApplication::applicationDirPath().toStdWString();
 #if defined(Q_OS_WIN32)
   this->_crashpad_client = nullptr;
 #elif defined(Q_OS_LINUX)
@@ -74,9 +76,7 @@ void Crashup::initCrashHandler() {
   // initialize crash handler
   this->_crashpad_client = new crashpad::CrashpadClient();
   // TODO: This path should be configurable
-  std::wstring handler(L"C:\\Users\\Administrator\\Documents\\desktop-"
-                       L"crashup\\google-crashpad\\crashpad\\out\\Debug_"
-                       L"x64\\crashpad_handler.exe");
+  std::wstring handler(this->executable_directory + L"\\crashpad_handler.exe");
   std::wstring crashdb;
   std::copy(this->working_dir.begin(), this->working_dir.end(),
             std::back_inserter(crashdb));

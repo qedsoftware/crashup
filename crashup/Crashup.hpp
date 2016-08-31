@@ -33,6 +33,10 @@ private:
   /// Network address for Socorro server.
   std::string server_address;
 
+  /// Directory where current executable is placed
+  /// Will look there for Crashpad Handler (if Windows)
+  std::wstring executable_directory;
+
   /// Path to upload page on Socorro server.
   std::string upload_path = "/submit";
 

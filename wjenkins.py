@@ -148,7 +148,7 @@ def install_qt_for_vstudio2015_x86_64():
 def install_qt_for_vstudio2013_x86_64():
     qt_url = "http://download.qt.io/official_releases/qt/5.6/5.6.0/qt-opensource-windows-x86-msvc2013_64-5.6.0.exe"
     qt_dest = r"C:\Users\Administrator\Documents\qtsetup_vs2013_64.exe"
-    qt_path = r"C:\Qt\Qt5.6.0\5.6\msvc2013_64"
+    qt_path = r"C:\Qt\Qt_5.6.0_vs2013_64bit"
     qt_name = "Qt (for VS 12.0 2013, 64-bit)"
     qt_options = "-ArgumentList @(\"--script\", \"C:\Users\Administrator\Documents\desktop-crashup\qt-installer-noninteractive-vs2013-64.qs\", \"--verbose\")"
     return make_install_dependency_script(qt_url, qt_dest, qt_name, qt_path, qt_options)
@@ -360,60 +360,6 @@ rm %s\%s.zip
         run(cmd)
 
 
-def compile_google_breakpad():
-    # NOTE: We do not need Google Breakpad on Windows
-    # TODO compile only when not present!
-    pref = "C:\Users\Administrator\Documents\desktop-crashup\google-breakpad"
-    cmd = r'''
-    Write-Output "Compiling google breakpad..."
-    $Env:GYP_MSVS_VERSION = "2013"
-    %s\src\tools\gyp\gyp.bat --no-circular-check %s\src\client\windows\breakpad_client.gyp
-    # msbuild %s\src\client\windows\breakpad_client.sln /p:PlatformToolset=v140 /p:VisualStudioVersion=14.0 /ToolsVersion:14.0 /p:Platform="x64"
-    msbuild %s\src\client\windows\breakpad_client.sln /p:PlatformToolset=v120 /p:VisualStudioVersion=12.0 /p:Platform="x64"
-    ''' % (pref, pref, pref, pref)
-    with hide('running'):
-        run(cmd)
-
-
-'''
-  processor_bits.lib(minidump.obj) : error LNK2019: unresolved external symbol
-"bool __cdecl google_breakpad::ParseProcMaps(class std::basic_string<char,struc
-t std::char_traits<char>,class std::allocator<char> > const &,class std::vector
-<struct google_breakpad::MappedMemoryRegion,class std::allocator<struct google_
-breakpad::MappedMemoryRegion> > *)" (?ParseProcMaps@google_breakpad@@YA_NABV?$b
-asic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAV?$vector@UMappedMe
-moryRegion@google_breakpad@@V?$allocator@UMappedMemoryRegion@google_breakpad@@@
-std@@@3@@Z) referenced in function "private: virtual bool __thiscall google_bre
-akpad::MinidumpLinuxMapsList::Read(unsigned int)" (?Read@MinidumpLinuxMapsList@
-google_breakpad@@EAE_NI@Z) [C:\Users\Administrator\Documents\desktop-crashup\go 
-
-https://bugs.chromium.org/p/google-breakpad/issues/detail?id=669
-this is because breakpad developers don't care about windows
-'''
-
-
-def compile_crashpad():
-    """Builds Crashpad for x86 and x64 (if Win64)
-    """
-    pref = "C:\Users\Administrator\Documents\desktop-crashup\google-crashpad\crashpad"
-    cmd = r'''
-    cd desktop-crashup\google-crashpad\crashpad
-    if(!(Test-Path "C:\Users\Administrator\Documents\desktop-crashup\google-crashpad\crashpad\out\Debug\crashpad_handler.exe")) {
-        $Env:GYP_MSVS_VERSION = "2013"
-        Write-Output "Generating Crashpad build files with GYP..."
-        python build\gyp_crashpad.py crashpad.gyp
-        Write-Output "Compling Crashpad (this may take long)..."
-        ninja -C out/Debug
-        python build\run_tests.py Debug
-    } else {
-        Write-Output "Crashpad already compiled."
-    }
-    cd ..\..
-    '''
-    with hide('running'):
-        run(cmd)
-
-
 def send_files():
     with hide('output'):
         run('md -Force C:\Users\Administrator\Documents\desktop-crashup')
@@ -424,21 +370,6 @@ def send_files():
         zipname='deploy',
         remote_path='C:\Users\Administrator\Documents\desktop-crashup'
     )
-    if not remote_file_exists('C:\Users\Administrator\Documents\desktop-crashup\google-breakpad'):
-        print INDENT + "Sending google-breakpad to remote host..."
-        put_files(
-            'google-breakpad', zipname='google-breakpad',remote_path='C:\Users\Administrator\Documents\desktop-crashup'
-        )
-    else:
-        print INDENT + "google-breakpad already present on remote host"
-
-    if not remote_file_exists('C:\Users\Administrator\Documents\desktop-crashup\google-crashpad'):
-        print INDENT + "Sending google-crashpad to remote host..."
-        put_files(
-            'google-crashpad', zipname='google-crashpad',remote_path='C:\Users\Administrator\Documents\desktop-crashup'
-        )
-    else:
-        print INDENT + "google-crashpad already present on remote host"
 
     print INDENT + "Sending gyp config file to remote host..."
     put_files(
@@ -470,8 +401,6 @@ def remote_build(hoststring, password):
         install_dependencies()
         send_files()
         adjust_env()
-        compile_crashpad()
-        # compile_google_breakpad()
         cmd = '''
         cd desktop-crashup
         C:\Python27\python.exe build_windows.py
