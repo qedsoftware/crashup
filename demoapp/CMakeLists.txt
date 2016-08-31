@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.0.2)
 
 if(WIN32)
-  option(HUNTER_ENABLED "Use Hunter package manager" NO)
-else()
   option(HUNTER_ENABLED "Use Hunter package manager" YES)
+else()
+  option(HUNTER_ENABLED "Use Hunter package manager" NO)
 endif()
 
 include("cmake/HunterGate.cmake")
