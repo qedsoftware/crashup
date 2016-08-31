@@ -365,16 +365,10 @@ def send_files():
         run('md -Force C:\Users\Administrator\Documents\desktop-crashup')
     print INDENT + "Sending source tree to remote host..."
     put_files(
-        'demoapp', 'crashup', 'tests', 'scripts',
-        'build_linux.py', 'build_windows.py',
+        'demoapp', 'crashup', 'tests', 'scripts', 'cmake',
+        'CMakeLists.txt', 'build_windows.py',
         zipname='deploy',
         remote_path='C:\Users\Administrator\Documents\desktop-crashup'
-    )
-
-    print INDENT + "Sending gyp config file to remote host..."
-    put_files(
-        'common.gypi', zipname='common.gypi',
-        remote_path='C:\Users\Administrator\Documents\desktop-crashup\google-breakpad\src\\build'
     )
 
 

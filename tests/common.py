@@ -22,10 +22,10 @@ if (not sys.platform.startswith('win')):
 def runapp():
     if sys.platform.startswith('linux'):
         # on linux there is support for virtual displays, so headless=True
-        return WidgetTracker("build/demoapp", headless=True)
+        return WidgetTracker("build/demoapp/demoapp", headless=True)
     elif sys.platform.startswith('win'):
         # don't create virtual display on windows
-        return WidgetTracker("build\Debug\demoapp.exe", headless=False)
+        return WidgetTracker("build\demoapp\Debug\demoapp.exe", headless=False)
     else:
         raise Exception("Unsupported platform!")
 

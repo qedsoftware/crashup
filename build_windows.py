@@ -48,7 +48,7 @@ def build_app(source_root, build_path, qt_root, generator):
     # http://stackoverflow.com/questions/31857315/how-can-i-use-cmake-to-generate-windows-10-universal-project
     # Win64 also is important here because we have only 64-bit version of Qt installed by now
     do_call(
-        "cmake", source_root + "/demoapp",
+        "cmake", source_root,
         "-G", generator, #"-DCMAKE_SYSTEM_VERSION=10.0",
         "-DCMAKE_PREFIX_PATH=%s"%qt_root
     )
@@ -94,7 +94,7 @@ if __name__ == "__main__":
     qt_root = "C:/Qt/Qt_5.6.0_vs2013_64bit/5.6/msvc2013_64"
     generator = "Visual Studio 12 2013 Win64"
     build_app(source_root, build_path, qt_root, generator)
-    copy_qt_dlls(qt_root, build_path + "/Debug/")
+    copy_qt_dlls(qt_root, build_path + "\\demoapp\\Debug\\")
     run_tests()
 
     # 32-bit
@@ -103,5 +103,5 @@ if __name__ == "__main__":
     qt_root = "C:/Qt/Qt_5.6.0_vs2013_32bit/5.6/msvc2013"
     generator = "Visual Studio 12 2013"     # Win32
     build_app(source_root, build_path, qt_root, generator)
-    copy_qt_dlls(qt_root, build_path + "/Debug/")
+    copy_qt_dlls(qt_root, build_path + "\\demoapp\\Debug\\")
     run_tests()

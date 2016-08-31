@@ -95,8 +95,8 @@ def remote_build(hoststring, password):
         if not fabric.contrib.files.exists('~/desktop-crashup'):
             run('mkdir ~/desktop-crashup')
         things_to_put = [
-            'demoapp', 'crashup', 'tests', 'scripts',
-            'build_linux.py'
+            'demoapp', 'crashup', 'tests', 'scripts', 'cmake',
+            'build_linux.py', 'CMakeLists.txt'
         ]
         things_to_put_lazy = ['google-breakpad']
         for f in things_to_put:

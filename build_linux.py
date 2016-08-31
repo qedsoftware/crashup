@@ -70,7 +70,7 @@ def build_app():
     os.mkdir("build")
     os.chdir("build")
     do_call(
-        "cmake", "../demoapp",
+        "cmake", "..",
         "-DCMAKE_PREFIX_PATH=/home/ubuntu/Qt/5.6/gcc_64/",
     )
     do_call("make")
