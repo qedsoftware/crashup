@@ -89,8 +89,8 @@ if __name__ == "__main__":
     install_requirements()
 
     # 64-bit
-    source_root = "C:/Users/Administrator/Documents/desktop-crashup"
-    build_path = "C:/Users/Administrator/Documents/desktop-crashup/build"
+    source_root = "C:\\Users\\Administrator\\Documents\\desktop-crashup"
+    build_path = "C:\\Users\\Administrator\\Documents\\desktop-crashup\\build"
     qt_root = "C:/Qt/Qt_5.6.0_vs2013_64bit/5.6/msvc2013_64"
     generator = "Visual Studio 12 2013 Win64"
     build_app(source_root, build_path, qt_root, generator)
@@ -98,8 +98,8 @@ if __name__ == "__main__":
     run_tests()
 
     # 32-bit
-    source_root = "C:/Users/Administrator/Documents/desktop-crashup"
-    build_path = "C:/Users/Administrator/Documents/desktop-crashup/build"
+    source_root = "C:\\Users\\Administrator\\Documents\\desktop-crashup"
+    build_path = "C:\\Users\\Administrator\\Documents\\desktop-crashup\\build"
     qt_root = "C:/Qt/Qt_5.6.0_vs2013_32bit/5.6/msvc2013"
     generator = "Visual Studio 12 2013"     # Win32
     build_app(source_root, build_path, qt_root, generator)

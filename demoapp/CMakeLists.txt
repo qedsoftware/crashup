@@ -1,5 +1,11 @@
 cmake_minimum_required(VERSION 3.0.2)
 
+if(WIN32)
+  option(HUNTER_ENABLED "Use Hunter package manager" YES)
+else()
+  option(HUNTER_ENABLED "Use Hunter package manager" NO)
+endif()
+
 include("cmake/HunterGate.cmake")
 HunterGate(
     URL "https://github.com/ruslo/hunter/archive/v0.15.22.tar.gz"
