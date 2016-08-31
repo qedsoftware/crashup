@@ -24,7 +24,8 @@ namespace crashup {
 Crashup::Crashup(std::string working_dir, std::string server_address) {
   this->working_dir = working_dir;
   this->server_address = server_address;
-  this->executable_directory = QCoreApplication::applicationDirPath().toStdWString();
+  this->executable_directory =
+      QCoreApplication::applicationDirPath().toStdWString();
 #if defined(Q_OS_WIN32)
   this->_crashpad_client = nullptr;
 #elif defined(Q_OS_LINUX)

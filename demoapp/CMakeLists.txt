@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.0.2)
 
+set(DESKTOP_CRASHUP_PATH "${CMAKE_CURRENT_LIST_DIR}/../")
+
 if(WIN32)
   option(HUNTER_ENABLED "Use Hunter package manager" YES)
 else()
@@ -55,6 +57,8 @@ add_library(Crashup ../crashup/Crashup.cpp)
 # Crash handling and uploading for Linux
 #
 if (UNIX)
+  find_package(Threads REQUIRED)
+
   # Uploading...
   add_library(LibcurlWrapper ${DESKTOP_CRASHUP_PATH}/crashup/crash_handler/libcurl_wrapper)
   target_link_libraries(LibcurlWrapper ${CMAKE_DL_LIBS})
