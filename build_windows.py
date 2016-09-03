@@ -12,6 +12,7 @@ from subprocess import CalledProcessError
 import shutil
 from time import sleep
 
+
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 TEST_DIRS = ['tests']
 
@@ -50,6 +51,7 @@ def build_app(source_root, build_path, generator):
     do_call(
         "cmake", source_root,
         "-G", generator, #"-DCMAKE_SYSTEM_VERSION=10.0",
+        "-DSOCORRO_UPLOAD_URL=%s" % SOCORRO_UPLOAD_URL,
     )
     do_call("cmake", "--build", os.getcwd(), "--config", "Debug")
     os.chdir("..")
@@ -71,6 +73,17 @@ def run_tests():
 if __name__ == "__main__":
     print "Building in workspace: " + os.getcwd()
     install_requirements()
+
+    global SOCORRO_UPLOAD_URL
+    global KIBANA_URL
+
+    SOCORRO_UPLOAD_URL = sys.argv[1]
+    KIBANA_URL = sys.argv[2]
+
+    with open('tests/private.py', 'w') as f:
+      f.write('''KIBANA_URL="%s"
+''' % (KIBANA_URL)
+      )
 
     # 64-bit
     source_root = "C:\\Users\\Administrator\\Documents\\desktop-crashup"

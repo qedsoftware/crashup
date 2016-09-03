@@ -3,13 +3,21 @@ Crashup
 
 Compiling demoapp
 -----------------
-1. (Linux only) Get and build Google Breakpad: `./scripts/build-breakpad.sh`
-2. Check if `CMAKE_PREFIX_PATH` environment variable is set to the Qt installation
-3. Create directory for build files and run `cmake <source directory>`
-4. Run `make`
 
-Notes
+Create directory for build files and generate build tree:
+
+```
+cd <source directory>
+mkdir _build
+cd _build
+cmake .. -DSOCORRO_UPLOAD_URL="<Socorro minidump upload URL>"
+```
+
+Run `make` or `cmake --build .` (esp. on Windows second option is recommended)
+
+
+Usage
 -----
 
-When writing your own app do not forget to copy `crashpad_handler` (Windows).
-For example see `demoapp/CMakeLists.txt`.
+For instructions how to integrate your app with Crashup, see [USAGE.md](USAGE.md).
+

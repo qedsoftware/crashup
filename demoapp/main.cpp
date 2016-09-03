@@ -1,3 +1,5 @@
+#include <crashup-demoapp/config.hpp>
+
 #include "CrashingWidget.hpp"
 #include "../crashup/Crashup.hpp"
 #include "WidgetTracker.hpp"
@@ -30,7 +32,7 @@ int main(int argc, char *argv[]) {
   /* just for the testing, generally these strings should be given by the user
    */
   std::string working_dir = ".";
-  std::string server_address = "http://socorro.qed.ai:5000/submit";
+  std::string server_address = SOCORRO_UPLOAD_URL;
 
   crashup::Crashup crashup("demoapp", "0.42", working_dir, server_address);
 

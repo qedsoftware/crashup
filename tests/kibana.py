@@ -5,11 +5,15 @@
 # QED | Contact: William Wu <w@qed.ai>
 # -----------------------------------------------------------------------------
 
+import re
 import requests
 
-
-import requests
 import time
+
+
+from .private import KIBANA_URL
+
+print(KIBANA_URL)
 
 def _time_int():
     return int(time.time()*1000)
@@ -53,8 +57,10 @@ def _payload_for(product = None, version = None, time_gte = None, time_lte = Non
     }
     return payload
 
-def query(server='socorro.qed.ai:5601', product=None, version=None, time_gte=None, time_lte=None):
-    r = requests.post("http://"+server+"/elasticsearch/socorro_reports/_search",
+def query(server=KIBANA_URL, product=None, version=None, time_gte=None, time_lte=None):
+    if not re.match('[a-z]+://', server):
+      server = 'http://' + server
+    r = requests.post(server+"/elasticsearch/socorro_reports/_search",
                       params={"timeout": 0, "ignore_unavailable": True, "preference": _time_int()},
                       json=_payload_for(product=product, version=version, time_gte=time_gte, time_lte=time_lte),
                       headers={"kbn-xsrf-token":"kibana"})
@@ -65,6 +71,6 @@ def query(server='socorro.qed.ai:5601', product=None, version=None, time_gte=Non
         return data['hits']['hits']
 
 
-def crash_ids_from_timepoint(timepoint, server='socorro.qed.ai:5601', product=None, version=None):
+def crash_ids_from_timepoint(timepoint, server=KIBANA_URL, product=None, version=None):
     hits = query(server=server, product=product, version=version, time_gte=timepoint, time_lte=now() + 3 * 1000)
     return { h['_source']['crash_id']: h['_source']['raw_crash']['dump_checksums']['upload_file_minidump'] for h in hits }

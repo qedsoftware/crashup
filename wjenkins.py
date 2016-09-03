@@ -58,7 +58,14 @@ import fabric.contrib.files
 from fabric.api import env, show, hide, run, put, local, cd, settings
 
 
-DEFAULT_HOSTSTRING = "Administrator@107.23.3.175:15465"
+def require_env(name):
+  value = os.getenv(name)
+  if value is None:
+    print("Ploease, provide %s environement variable."%name)
+    exit(1)
+  else:
+    return value
+
 
 def install_dependencies():
     # install cmake, qt, python, pip, etc.
@@ -70,22 +77,12 @@ def install_dependencies():
     commands += install_python()
     #commands += install_vstudio2015()
     commands += install_vstudio2013()
-    #commands += install_qt_for_vstudio2015()
-    #commands += install_qt_for_vstudio2013_x86_64()
-    #commands += install_qt_for_vstudio2013_i386()
     #commands += install_winsdk()
     commands += install_ultravnc()
 
     with hide('running'):
         run(commands)
 
-def send_install_requirements():
-    put_files(
-        'qt-installer-noninteractive-vs2013-32.qs',
-        'qt-installer-noninteractive-vs2013-64.qs',
-        zipname='deploy_preinstall',
-        remote_path='C:\Users\Administrator\Documents\desktop-crashup'
-    )
 
 def make_install_dependency_script(url, dest, name, path, options):
     """Generates commands that download installer and install the software
@@ -136,30 +133,6 @@ def install_python():
     python_name = "Python"
     python_options = "/qn "
     return make_install_dependency_script(python_url, python_dest, python_name, python_path, python_options)
-
-def install_qt_for_vstudio2015_x86_64():
-    qt_url = "http://download.qt.io/official_releases/qt/5.6/5.6.0/qt-opensource-windows-x86-msvc2015_64-5.6.0.exe"
-    qt_dest = r"C:\Users\Administrator\Documents\qtsetup_vs2015_64.exe"
-    qt_path = r"C:\Qt\Qt5.6.0\5.6\msvc2015_64"
-    qt_name = "Qt (for VS 14.0 2015, 64-bit)"
-    qt_options = ""         # TODO: use qt-installer-...-32.qs, modify it (installation path!) and use
-    return make_install_dependency_script(qt_url, qt_dest, qt_name, qt_path, qt_options)
-
-def install_qt_for_vstudio2013_x86_64():
-    qt_url = "http://download.qt.io/official_releases/qt/5.6/5.6.0/qt-opensource-windows-x86-msvc2013_64-5.6.0.exe"
-    qt_dest = r"C:\Users\Administrator\Documents\qtsetup_vs2013_64.exe"
-    qt_path = r"C:\Qt\Qt_5.6.0_vs2013_64bit"
-    qt_name = "Qt (for VS 12.0 2013, 64-bit)"
-    qt_options = "-ArgumentList @(\"--script\", \"C:\Users\Administrator\Documents\desktop-crashup\qt-installer-noninteractive-vs2013-64.qs\", \"--verbose\")"
-    return make_install_dependency_script(qt_url, qt_dest, qt_name, qt_path, qt_options)
-
-def install_qt_for_vstudio2013_i386():
-    qt_url = "http://download.qt.io/official_releases/qt/5.6/5.6.0/qt-opensource-windows-x86-msvc2013-5.6.0.exe"
-    qt_dest = r"C:\Users\Administrator\Documents\qtsetup_vs2013_32.exe"
-    qt_path = r"C:\Qt\Qt_5.6.0_vs2013_32bit"
-    qt_name = "Qt (for VS 12.0 2013, 32-bit)"
-    qt_options = "-ArgumentList @(\"--script\", \"C:\Users\Administrator\Documents\desktop-crashup\qt-installer-noninteractive-vs2013-32.qs\", \"--verbose\")"
-    return make_install_dependency_script(qt_url, qt_dest, qt_name, qt_path, qt_options)
 
 def install_winsdk():
     winsdk_url = "http://download.microsoft.com/download/6/A/2/6A2ECE81-C934-4E47-91CC-52DA00A65345/sdksetup.exe"
@@ -391,19 +364,27 @@ def remote_build(hoststring, password):
     env.use_shell = False  # we don't have bash on windows
     env.always_use_pty = False  # to prevent truncating lines by the server
     with show('exceptions'):
-        send_install_requirements()
         install_dependencies()
         send_files()
         adjust_env()
         cmd = '''
         cd desktop-crashup
-        C:\Python27\python.exe build_windows.py
-        '''
+        C:\Python27\python.exe build_windows.py "%s" "%s"
+        ''' % (SOCORRO_UPLOAD_URL, KIBANA_URL)
         run(cmd)
 
 
 def main():
-    hoststring = os.getenv('CRASHUP_TEST_WINDOWS_HOSTSTRING', DEFAULT_HOSTSTRING)
+    global SOCORRO_UPLOAD_URL
+    global KIBANA_URL
+
+    SOCORRO_UPLOAD_URL = require_env('SOCORRO_UPLOAD_URL')
+    KIBANA_URL = require_env('KIBANA_URL')
+
+    hoststring = os.getenv('CRASHUP_TEST_WINDOWS_HOSTSTRING')
+    if hoststring is None:
+        print("Please, provide CRASHUP_TEST_WINDOWS_HOSTSTRING environment variable.")
+        sys.exit(1)
     global INDENT
     INDENT = "[" + (" " * len(hoststring)) + "] >>>| "
     password = os.getenv('CRASHUP_TEST_WINDOWS_PASSWORD')

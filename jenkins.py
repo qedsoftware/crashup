@@ -25,9 +25,6 @@ import fabric.contrib.files
 from fabric.api import env, show, hide, run, put, local, cd, settings, prefix
 
 
-DEFAULT_HOSTSTRING = "ubuntu@52.87.190.65"
-
-
 def put_tar(local_name, remote_path):
     """Same as fabric.api.put, but sends tar archive with files instead of
     sending them one by one, which is _very_ slow. Also, assumes, that file
@@ -66,7 +63,7 @@ def remote_build(hoststring, password):
         if not fabric.contrib.files.exists('~/desktop-crashup'):
             run('mkdir ~/desktop-crashup')
         things_to_put = [
-            'demoapp', 'crashup', 'tests', 'scripts', 'cmake',
+            'demoapp', 'crashup', 'tests', 'cmake',
             'build_linux.py', 'CMakeLists.txt'
         ]
 
@@ -83,7 +80,10 @@ def remote_build(hoststring, password):
 
 
 def main():
-    hoststring = os.getenv('CRASHUP_TEST_HOSTSTRING', DEFAULT_HOSTSTRING)
+    hoststring = os.getenv('CRASHUP_TEST_HOSTSTRING')
+    if hoststring is None:
+        print("Please, provide CRASHUP_TEST_HOSTSTRING environment variable.")
+        sys.exit(1)
     password = os.getenv('CRASHUP_TEST_PASSWORD')
     if password is None:
         password = getpass.getpass("%s password: " % DEFAULT_HOSTSTRING)
@@ -92,3 +92,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.0.2)
 
 project(demoapp)
 
+set(SOCORRO_UPLOAD_URL "localhost:5000" CACHE STRING "URL where crash minidumps will be uploaded.")
+configure_file(config.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/crashup-demoapp/config.hpp)
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
 find_package(Qt5Widgets REQUIRED) # Qt5::Widgets
 
 #
