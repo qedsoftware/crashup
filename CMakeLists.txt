@@ -1,10 +1,6 @@
 cmake_minimum_required(VERSION 3.0.2)
 
-if(WIN32)
-  option(HUNTER_ENABLED "Use Hunter package manager" YES)
-else()
-  option(HUNTER_ENABLED "Use Hunter package manager" NO)
-endif()
+option(HUNTER_ENABLED "Use Hunter package manager" YES)
 
 include("cmake/HunterGate.cmake")
 HunterGate(
@@ -31,41 +27,15 @@ set(QT_USE_QTNETWORK true)
 
 ############################################################################
 
-#
-# Setup Crashpad / Breakpad
-#
-if(UNIX)
-    set(BREAKPAD_PATH ${CMAKE_CURRENT_LIST_DIR}/google-breakpad)
-    include_directories(${BREAKPAD_PATH}/include/breakpad)
-    link_directories(${BREAKPAD_PATH}/lib)
-elseif (WIN32)
-    hunter_add_package(crashpad)
-    find_package(crashpad CONFIG REQUIRED)
-endif()
 
-#
-# Crash handling and uploading for Linux
-#
-if (UNIX)
-  find_package(Threads REQUIRED)
-  add_library(crashup
-    crashup/Crashup.cpp
+hunter_add_package(crashpad)
+find_package(crashpad CONFIG REQUIRED)
 
-    crashup/crash_handler/CrashHandler.cpp
-    crashup/crash_handler/CrashUploader.cpp
+add_library(crashup
+  crashup/Crashup.cpp
+)
+target_link_libraries(crashup PUBLIC crashpad::crashpad_client Qt5::Core)
 
-    crashup/crash_handler/libcurl_wrapper.cc
-    crashup/crash_handler/google_crashdump_uploader.cc
-  )
-  target_link_libraries(crashup PUBLIC Qt5::Core libbreakpad_client.a ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT})
-
-elseif (WIN32)
-  add_library(crashup
-    crashup/Crashup.cpp
-  )
-  target_link_libraries(crashup PUBLIC crashpad::crashpad_client Qt5::Core)
-
-endif()
 
 ############################################################################
 

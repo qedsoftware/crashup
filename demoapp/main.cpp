@@ -30,18 +30,15 @@ int main(int argc, char *argv[]) {
   /* just for the testing, generally these strings should be given by the user
    */
   std::string working_dir = ".";
-  std::string server_address = "http://socorro.qed.ai:5000";
+  std::string server_address = "http://socorro.qed.ai:5000/submit";
 
-  crashup::Crashup crashup(working_dir, server_address);
-
-  crashup.setAppName("demoapp");
-  crashup.setAppVersion("0.42");
+  crashup::Crashup crashup("demoapp", "0.42", working_dir, server_address);
 
   // initialize Crashup internals
   crashup.init();
 
   CrashingWidget w([&](std::string event_name, std::string event_data) {},
-                   [&]() { crashup.uploadPendingMinidumps(); });
+                   [&]() {});
   w.show();
   w.activateWindow();
   return demoapp.exec();

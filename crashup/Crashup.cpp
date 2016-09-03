@@ -8,29 +8,24 @@
 #include <iostream>
 
 #if defined(Q_OS_WIN32)
-// TODO: fix this when Hunter :: Crashpad will be working.
 #include "client/crash_report_database.h"
 #include "client/crashpad_client.h"
 #include "client/crashpad_info.h"
 #include "client/settings.h"
 #include "base/files/file_path.h"
-#elif defined(Q_OS_LINUX)
-#include "crash_handler/CrashHandler.hpp"
-#include "crash_handler/CrashUploader.hpp"
 #endif
 
 namespace crashup {
 
-Crashup::Crashup(std::string working_dir, std::string server_address) {
-  this->working_dir = working_dir;
-  this->server_address = server_address;
+Crashup::Crashup(std::string app_name, std::string app_version,
+                 std::string data_directory, std::string upload_url)
+    : app_name(app_name), app_version(app_version),
+      data_directory(data_directory), upload_url(upload_url) {
+  // Get executable directory to find crashpad_handler then.
   this->executable_directory =
       QCoreApplication::applicationDirPath().toStdWString();
 #if defined(Q_OS_WIN32)
   this->_crashpad_client = nullptr;
-#elif defined(Q_OS_LINUX)
-  this->_crash_handler = nullptr;
-  this->_crash_uploader = nullptr;
 #endif
 }
 
@@ -39,21 +34,17 @@ void Crashup::init() {
   requested dir throws exception if requested path is inaccessible */
   this->initCrashHandler();
 
-  /* initiates CrashUploader, configured to upload onto server_address */
+  /* initiates CrashUploader, configured to upload onto upload_url */
   /* given to the crashup constructor */
   this->initCrashUploader();
 }
 
-void Crashup::setAppName(const std::string &name) { this->app_name = name; }
-void Crashup::setAppVersion(const std::string &version) {
-  this->app_version = version;
-}
 void Crashup::setRateLimit(bool throttle) { this->throttle = throttle; }
 
 ////////////////////////////////////////////////////////////////////////////
 
 std::string Crashup::makeInternalDirPath(const std::string &dirpath) {
-  QString final_dir_path = QDir(QString::fromStdString(this->working_dir))
+  QString final_dir_path = QDir(QString::fromStdString(this->data_directory))
                                .filePath(QString::fromStdString(dirpath));
   QDir final_dir = QDir(final_dir_path);
   if (!final_dir.exists()) {
@@ -76,10 +67,9 @@ void Crashup::initCrashHandler() {
 #if defined(Q_OS_WIN32)
   // initialize crash handler
   this->_crashpad_client = new crashpad::CrashpadClient();
-  // TODO: This path should be configurable
   std::wstring handler(this->executable_directory + L"\\crashpad_handler.exe");
   std::wstring crashdb;
-  std::copy(this->working_dir.begin(), this->working_dir.end(),
+  std::copy(this->data_directory.begin(), this->data_directory.end(),
             std::back_inserter(crashdb));
   crashdb += L"\\crashdb";
 
@@ -90,8 +80,7 @@ void Crashup::initCrashHandler() {
   }
 
   int res = _crashpad_client->StartHandler(
-      base::FilePath(handler), base::FilePath(crashdb),
-      this->server_address + this->upload_path,
+      base::FilePath(handler), base::FilePath(crashdb), this->upload_url,
       // data to send with POST requests uploading minidumps:
       std::map<std::string, std::string>{{"ProductName", this->app_name},
                                          {"Version", this->app_version}},
@@ -103,11 +92,6 @@ void Crashup::initCrashHandler() {
   if (!res) {
     throw CrashupInitializationException("CrashpadClient::UseHandler failed");
   }
-#elif defined(Q_OS_LINUX)
-  std::string minidumps_abspath = makeInternalDirPath("minidumps");
-  this->_crash_handler = crash_handling::CrashHandler::instance();
-  this->_crash_handler->init(minidumps_abspath);
-// this->_crash_handler->setReportCrashesToSystem(true);
 #elif defined(Q_OS_MAC)
   throw TODOException("Crashup::initCrashHandler -- no OS_MAC support")
 #endif
@@ -116,7 +100,7 @@ void Crashup::initCrashHandler() {
 void Crashup::initCrashUploader() {
 #if defined(Q_OS_WIN32)
   std::wstring crashdb;
-  std::copy(this->working_dir.begin(), this->working_dir.end(),
+  std::copy(this->data_directory.begin(), this->data_directory.end(),
             std::back_inserter(crashdb));
   crashdb += L"\\crashdb";
   // turn on minidump uploads in crashdb settings
@@ -127,39 +111,9 @@ void Crashup::initCrashUploader() {
     throw CrashupInitializationException(
         "crashpad::CrashReportDatabase::Settings::SetUploadsEnabled failed");
   }
-#elif defined(Q_OS_LINUX)
-  std::string minidumps_abspath = makeInternalDirPath("minidumps");
-  this->_crash_uploader = new crash_handling::CrashUploader(
-      QString::fromStdString(this->app_name),
-      QString::fromStdString(this->app_version),
-      QString::fromStdString(this->server_address + this->upload_path),
-      QString::fromStdString(minidumps_abspath));
 #elif defined(Q_OS_MAC)
   throw TODOException("Crashup::initCrashUploader -- no OS_MAC support")
 #endif
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-void Crashup::writeMinidump() {
-#if defined(Q_OS_LINUX)
-  if (_crash_handler != nullptr)
-    _crash_handler->writeMinidump();
-  else
-    throw CrashupInitializationException("CrashHandler not initialized.");
-#else
-  throw TODOException(
-      "On-demand minidump writing is not implemented on other OS.");
-#endif
-}
-
-void Crashup::uploadPendingMinidumps() {
-#if defined(Q_OS_LINUX)
-  if (_crash_uploader != nullptr)
-    _crash_uploader->uploadPendingMinidumps();
-  else
-#endif
-    throw CrashupInitializationException("CrashUploader not initialized.");
 }
 
 } // namespace crashup

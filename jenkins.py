@@ -46,28 +46,11 @@ def put_tar(local_name, remote_path):
             run('rm %s.tar' % local_name)
 
 
-def install_cmake_repo():
-    run("sudo apt-get install -y software-properties-common")
-    run("sudo add-apt-repository -y ppa:george-edison55/cmake-3.x")
-    run("sudo apt-get update")
-
-
 def install_clang_format():
     run('sudo apt-add-repository -y "deb http://llvm.org/apt/trusty/ llvm-toolchain-trusty-3.7 main"')
     run('wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key|sudo apt-key add -')
     run("sudo apt-get update")
     run("sudo apt-get install -y --force-yes clang-format-3.7")
-
-
-def install_qt_56():
-    if fabric.contrib.files.exists('~/Qt'):
-        return
-    run("wget download.qt.io/official_releases/qt/5.6/5.6.0/qt-opensource-linux-x64-5.6.0.run")
-    run("chmod +x qt-opensource-linux-x64-5.6.0.run")
-    run(
-        "./qt-opensource-linux-x64-5.6.0.run --platform minimal "
-        "--script desktop-crashup/qt-installer-noninteractive.qs --verbose"
-    )
 
 
 def remote_build(hoststring, password):
@@ -80,31 +63,15 @@ def remote_build(hoststring, password):
             run('clang-format-3.7 --version')
         except:
             install_clang_format()
-        run('sudo apt-get -y build-dep python-imaging')
-        pkgs = """
-        libtiff5-dev libjpeg8-dev zlib1g-dev libfreetype6-dev liblcms2-dev
-        libwebp-dev tcl8.6-dev tk8.6-dev python-tk tar git xvfb cmake make
-        python-pip libx11-dev python-virtualenv libjpeg-dev
-        qt5-default qttools5-dev-tools cmake=3.2.2-2~ubuntu14.04.1~ppa1
-        """
-        try:
-            run('sudo apt-get install -y ' + " ".join(pkgs.split()))
-        except:
-            install_cmake_repo()
-            run('sudo apt-get install -y ' + " ".join(pkgs.split()))
         if not fabric.contrib.files.exists('~/desktop-crashup'):
             run('mkdir ~/desktop-crashup')
         things_to_put = [
             'demoapp', 'crashup', 'tests', 'scripts', 'cmake',
             'build_linux.py', 'CMakeLists.txt'
         ]
-        things_to_put_lazy = ['google-breakpad']
+
         for f in things_to_put:
             put_tar(f, '~/desktop-crashup/')
-        for f in things_to_put_lazy:
-            if not fabric.contrib.files.exists('~/desktop-crashup/' + f):
-                put_tar(f, '~/desktop-crashup/')
-        install_qt_56()
         with cd('~/desktop-crashup/'):
             if not fabric.contrib.files.exists('~/desktop-crashup/venv'):
                 run('virtualenv venv')
