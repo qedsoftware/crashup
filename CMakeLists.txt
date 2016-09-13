@@ -10,6 +10,8 @@ HunterGate(
 
 project(crashup)
 
+option(CRASHUP_BUILD_DEMOAPP "Crashup build demoapp" ON)
+
 if (MSVC)
    # http://stackoverflow.com/questions/5004858/stdmin-gives-error
    # Ask politely <windows.h> not to be so stupid:
@@ -39,4 +41,6 @@ target_link_libraries(crashup PUBLIC crashpad::crashpad_client Qt5::Core)
 
 ############################################################################
 
-add_subdirectory(demoapp)
+if(CRASHUP_BUILD_DEMOAPP)
+  add_subdirectory(demoapp)
+endif()
