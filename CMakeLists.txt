@@ -44,3 +44,51 @@ target_link_libraries(crashup PUBLIC crashpad::crashpad_client Qt5::Core)
 if(CRASHUP_BUILD_DEMOAPP)
   add_subdirectory(demoapp)
 endif()
+
+####
+# Installation (https://github.com/forexample/package-example)
+
+set(config_install_dir "lib/cmake/${PROJECT_NAME}")
+
+set(generated_dir "${CMAKE_CURRENT_BINARY_DIR}/generated")
+
+set(project_config "${generated_dir}/${PROJECT_NAME}Config.cmake")
+set(targets_export_name "${PROJECT_NAME}Targets")
+set(namespace "${PROJECT_NAME}::")
+
+include(CMakePackageConfigHelpers)
+
+# Use variables:
+#   * targets_export_name
+#   * PROJECT_NAME
+configure_package_config_file(
+    "cmake/Config.cmake.in"
+    "${project_config}"
+    INSTALL_DESTINATION "${config_install_dir}"
+)
+
+install(
+    TARGETS crashup
+    EXPORT "${targets_export_name}"
+    LIBRARY DESTINATION "lib"
+    ARCHIVE DESTINATION "lib"
+    RUNTIME DESTINATION "bin"
+    INCLUDES DESTINATION "include"
+)
+
+install(
+    DIRECTORY "crashup"
+    DESTINATION "include"
+    FILES_MATCHING PATTERN "*.hpp"
+)
+
+install(
+    FILES "${project_config}"
+    DESTINATION "${config_install_dir}"
+)
+
+install(
+    EXPORT "${targets_export_name}"
+    NAMESPACE "${namespace}"
+    DESTINATION "${config_install_dir}"
+)
