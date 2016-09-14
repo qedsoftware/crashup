@@ -58,7 +58,7 @@ import fabric.contrib.files
 from fabric.api import env, show, hide, run, put, local, cd, settings
 
 
-DEFAULT_HOSTSTRING = "Administrator@107.23.3.175"
+DEFAULT_HOSTSTRING = "Administrator@107.23.3.175:15465"
 
 def install_dependencies():
     # install cmake, qt, python, pip, etc.
