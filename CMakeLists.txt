@@ -20,7 +20,8 @@ else ()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif ()
 
-find_package(Qt5 COMPONENTS Core Widgets REQUIRED) # Qt5::Widgets, Qt5::Core
+hunter_add_package(Qt)
+find_package(Qt5Core REQUIRED) # Qt5::Core
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)

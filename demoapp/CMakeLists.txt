@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.0.2)
 
 project(demoapp)
 
+find_package(Qt5Widgets REQUIRED) # Qt5::Widgets
 
 #
 # MakeSegv library

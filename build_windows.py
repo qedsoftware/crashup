@@ -50,7 +50,6 @@ def build_app(source_root, build_path, qt_root, generator):
     do_call(
         "cmake", source_root,
         "-G", generator, #"-DCMAKE_SYSTEM_VERSION=10.0",
-        "-DCMAKE_PREFIX_PATH=%s"%qt_root
     )
     do_call("cmake", "--build", os.getcwd(), "--config", "Debug")
     os.chdir("..")
