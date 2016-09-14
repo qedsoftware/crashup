@@ -71,8 +71,8 @@ def install_dependencies():
     #commands += install_vstudio2015()
     commands += install_vstudio2013()
     #commands += install_qt_for_vstudio2015()
-    commands += install_qt_for_vstudio2013_x86_64()
-    commands += install_qt_for_vstudio2013_i386()
+    #commands += install_qt_for_vstudio2013_x86_64()
+    #commands += install_qt_for_vstudio2013_i386()
     #commands += install_winsdk()
     commands += install_ultravnc()
 

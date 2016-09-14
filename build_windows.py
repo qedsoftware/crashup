@@ -36,7 +36,7 @@ def install_requirements():
         do_call("pip", "install", "requests")
 
 
-def build_app(source_root, build_path, qt_root, generator):
+def build_app(source_root, build_path, generator):
     # http://stackoverflow.com/questions/3618721/how-to-build-google-google-breakpad-for-windows
     if os.path.exists(build_path):
         shutil.rmtree(build_path)
@@ -53,21 +53,6 @@ def build_app(source_root, build_path, qt_root, generator):
     )
     do_call("cmake", "--build", os.getcwd(), "--config", "Debug")
     os.chdir("..")
-
-
-def copy_qt_dlls(qt_root, build_path):
-    dlls = '''
-    Qt5Concurrent.dll Qt5Concurrentd.dll Qt5Core.dll Qt5Cored.dll Qt5Gui.dll
-    Qt5Guid.dll Qt5Location.dll Qt5Locationd.dll Qt5Network.dll Qt5Networkd.dll
-    Qt5Positioning.dll Qt5Positioningd.dll Qt5Qml.dll Qt5Qmld.dll Qt5Test.dll
-    Qt5Testd.dll Qt5WebSockets.dll Qt5WebSocketsd.dll Qt5Widgets.dll
-    Qt5Widgetsd.dll Qt5WinExtras.dll Qt5WinExtrasd.dll
-    '''.split()
-    for f in dlls:
-        shutil.copy2(
-            qt_root + "\\bin\\" + f,
-            build_path
-        )
 
 
 def run_tests():
@@ -90,17 +75,13 @@ if __name__ == "__main__":
     # 64-bit
     source_root = "C:\\Users\\Administrator\\Documents\\desktop-crashup"
     build_path = "C:\\Users\\Administrator\\Documents\\desktop-crashup\\build"
-    qt_root = "C:/Qt/Qt_5.6.0_vs2013_64bit/5.6/msvc2013_64"
     generator = "Visual Studio 12 2013 Win64"
-    build_app(source_root, build_path, qt_root, generator)
-    copy_qt_dlls(qt_root, build_path + "\\demoapp\\Debug\\")
+    build_app(source_root, build_path, generator)
     run_tests()
 
     # 32-bit
     source_root = "C:\\Users\\Administrator\\Documents\\desktop-crashup"
     build_path = "C:\\Users\\Administrator\\Documents\\desktop-crashup\\build"
-    qt_root = "C:/Qt/Qt_5.6.0_vs2013_32bit/5.6/msvc2013"
     generator = "Visual Studio 12 2013"     # Win32
-    build_app(source_root, build_path, qt_root, generator)
-    copy_qt_dlls(qt_root, build_path + "\\demoapp\\Debug\\")
+    build_app(source_root, build_path, generator)
     run_tests()

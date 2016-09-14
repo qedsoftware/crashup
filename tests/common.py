@@ -59,7 +59,7 @@ def md5(fname):
     return hash_md5.hexdigest().lower()
 
 
-def wait_until_minidump_is_uploading(timepoint, dumps, timeout=20., step=5.):
+def wait_until_minidump_is_uploading(timepoint, dumps, timeout=40., step=5.):
     current = 0.
     if sys.platform.startswith('win'):
         minidump_dir = os.path.join("crashdb", "reports")
