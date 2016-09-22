@@ -93,7 +93,7 @@ void Crashup::initCrashHandler() {
     throw CrashupInitializationException("CrashpadClient::UseHandler failed");
   }
 #elif defined(Q_OS_MAC)
-  throw TODOException("Crashup::initCrashHandler -- no OS_MAC support")
+  throw TODOException("Crashup::initCrashHandler -- no OS_MAC support");
 #endif
 }
 
@@ -112,7 +112,7 @@ void Crashup::initCrashUploader() {
         "crashpad::CrashReportDatabase::Settings::SetUploadsEnabled failed");
   }
 #elif defined(Q_OS_MAC)
-  throw TODOException("Crashup::initCrashUploader -- no OS_MAC support")
+  throw TODOException("Crashup::initCrashUploader -- no OS_MAC support");
 #endif
 }
 
