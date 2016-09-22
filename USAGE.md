@@ -1,7 +1,7 @@
 Integrating your application with Crashup
 =========================================
 
-I assume that your project is CMake-based.
+I assume that your project is CMake-based and uses Qt5 framework.
 
 **NOTE:** Crashup does not require installation (it is automatically installed by Hunter when building with CMake).
 
@@ -14,7 +14,7 @@ Add Hunter Gate file to your project - you can download it from [hunter-packages
 
 Setup Hunter repository (add this to the beginning of `CMakeLists.txt` before `project(...)` statement)
 
-```
+```cmake
 include("cmake/HunterGate.cmake")
 HunterGate(
     URL "<hunter archive url>"
@@ -30,7 +30,7 @@ Where `cmake/HunterGate.cmake` is Hunter Gate file.
 
 Install Crashup package.
 
-```
+```cmake
 hunter_add_package(crashup)
 find_package(crashup REQUIRED)
 ```
@@ -38,14 +38,14 @@ find_package(crashup REQUIRED)
 
 Link your executable with crashup
 
-```
+```cmake
 target_link_libraries(my_executable crashup::crashup)
 ```
 
 
 And copy `crashpad_handler` executable to directory where `my_executable` is placed.
 
-```
+```cmake
 find_package(crashpad CONFIG REQUIRED)
 
 add_custom_command(
@@ -58,22 +58,93 @@ add_custom_command(
 )
 ```
 
+`crash_handler` executable **must** be in the same directory as the executable that uses Crashup.
+
 
 3. Initialize Crashup in your application
 -----------------------------------------
 
+I assume you create `QApplication` object in the beginning of `main` function.
+
+```cxx
+#include <QApplication>
+// ...
+
+int main(int argc, char *argv[]) {
+    QApplication myapp(argc, argv);
+    // ...
+}
+```
+
 Create `crashup::Crashup` instance in your `main` function.
+
+The object **must** be created after `QApplication` object, because it uses some features provided by `QApplication`.
+
+Instead of `QApplication` you can create `QCoreApplication` for apps without UI.
+
+
 The parameters the constructor gets are:
 * application name
 * application version
 * data directory for Crashup (i.e. place where crash minidumps will be stored)
-* URL for uploading crash reports (e.g. `http://some.server:1234/submit` for Socorro if collector is running on `some.server:1234`)
+* URL for uploading crash reports (e.g. `http://some.server:1234/submit` if Socorro Collector is running on `some.server:1234`)
 
 Then you can set some options like throttling then.
 
 After setting up all options call `init` method on `crashup::Crashup` instance.
 
+
 4. Crashup is ready
 -------------------
 
-Crash handling is working...
+Here are files we created:
+
+```cmake
+# CMakeLists.txt
+
+cmake_minimum_required(VERSION 3.0)
+
+include("cmake/HunterGate.cmake")
+HunterGate(
+    URL "<your URL to Hunter>"
+    SHA1 "<its SHA1>"
+)
+
+project(foo)
+
+hunter_add_package(crashup)
+find_package(crashup CONFIG REQUIRED)
+
+hunter_add_package(Qt)
+find_package(Qt5 CONFIG COMPONENTS Core Widgets REQUIRED)
+
+add_executable(foo main.cpp)
+target_link_libraries(foo crashup::crashup Qt5::Core Qt5::Widgets)
+
+find_package(crashpad CONFIG REQUIRED)
+
+add_custom_command(
+    TARGET foo
+    PRE_BUILD
+    COMMAND
+    "${CMAKE_COMMAND}" -E copy
+    "$<TARGET_FILE:crashpad::crashpad_handler>"
+    "$<TARGET_FILE_DIR:foo>"
+)
+```
+
+```cxx
+// main.cpp
+
+#include <crashup/Crashup.hpp>
+#include <QApplication>
+// ...
+
+int main(int argc, char * argv[]) {
+    QApplication myapp(argc, argv);
+    // Minidumps will be stored in current working directory
+    crashup::Crashup handler("App1", "v1", ".", "<your collector URL>");
+    handler.init();
+    // ...
+}
+```
