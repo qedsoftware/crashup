@@ -72,5 +72,5 @@ def query(server=KIBANA_URL, product=None, version=None, time_gte=None, time_lte
 
 
 def crash_ids_from_timepoint(timepoint, server=KIBANA_URL, product=None, version=None):
-    hits = query(server=server, product=product, version=version, time_gte=timepoint, time_lte=now() + 3 * 1000)
+    hits = query(server=server, product=product, version=version, time_gte=timepoint - 3 * 1000, time_lte=now() + 3 * 1000)
     return { h['_source']['crash_id']: h['_source']['raw_crash']['dump_checksums']['upload_file_minidump'] for h in hits }

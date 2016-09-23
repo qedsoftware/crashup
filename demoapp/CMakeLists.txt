@@ -30,12 +30,10 @@ target_link_libraries (WidgetTracker Qt5::Widgets)
 add_executable(demoapp main.cpp)
 target_link_libraries (demoapp crashup Qt5::Widgets CrashingWidget WidgetTracker)
 
-if(WIN32)
-  add_custom_command(TARGET demoapp POST_BUILD
-    COMMAND "${CMAKE_COMMAND}" -E copy
-        "$<TARGET_FILE:crashpad::crashpad_handler>"
-        "$<TARGET_FILE_DIR:demoapp>/$<TARGET_FILE_NAME:crashpad::crashpad_handler>"
-    COMMENT "Copying Crashpad Handler"
-  )
-endif()
-
+add_custom_command(TARGET demoapp PRE_BUILD
+  COMMAND "${CMAKE_COMMAND}" -E make_directory $<TARGET_FILE_DIR:demoapp>
+  COMMAND "${CMAKE_COMMAND}" -E copy
+      "$<TARGET_FILE:crashpad::crashpad_handler>"
+      "$<TARGET_FILE_DIR:demoapp>"
+  COMMENT "Copying Crashpad Handler"
+)

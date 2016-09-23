@@ -4,11 +4,11 @@
 #include <map>
 #include <string>
 #include <vector>
-#if defined(Q_OS_WIN32)
+#if defined(Q_OS_WIN32) || defined(Q_OS_MAC)
 #include "client/simple_string_dictionary.h"
 #endif
 
-#if defined(Q_OS_WIN32)
+#if defined(Q_OS_WIN32) || defined(Q_OS_MAC)
 namespace crashpad {
 class CrashpadClient;
 }
@@ -29,8 +29,8 @@ private:
   std::string upload_url;
 
   /// Directory where current executable is placed
-  /// Will look there for Crashpad Handler (if Windows)
-  std::wstring executable_directory;
+  /// Will look there for Crashpad Handler
+  std::string executable_directory;
 
   /// Application name.
   std::string app_name;
@@ -41,7 +41,7 @@ private:
   /// Whether to limit minidump uploads to 1/hour.
   bool throttle = false;
 
-#if defined(Q_OS_WIN32)
+#if defined(Q_OS_WIN32) || defined(Q_OS_MAC)
   /// Crashpad library driver.
   crashpad::CrashpadClient *_crashpad_client;
 #endif

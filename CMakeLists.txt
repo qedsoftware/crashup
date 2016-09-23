@@ -17,7 +17,7 @@ if (MSVC)
    # Ask politely <windows.h> not to be so stupid:
    add_definitions(-DNOMINMAX)
 else ()
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif ()
 
 hunter_add_package(Qt)
