@@ -18,13 +18,16 @@
 #endif
 
 namespace {
-template <typename StringType> StringType string_cast(const std::string &s);
 
-template <> std::string string_cast(const std::string &s) { return s; }
-
-template <> std::wstring string_cast(const std::string &s) {
+base::FilePath make_file_path(const std::string &path) {
+#if defined(Q_OS_MAC)
+  return base::FilePath(path);
+#elif defined(Q_OS_WIN32)
   static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-  return converter.from_bytes(s);
+  return base::FilePath(converter.from_bytes(path));
+#else
+#error "This system is not supported right now"
+#endif
 }
 }
 
@@ -97,9 +100,7 @@ void Crashup::initCrashHandler() {
   }
 
   int res = _crashpad_client->StartHandler(
-      base::FilePath(string_cast<base::FilePath::StringType>(handler)),
-      base::FilePath(string_cast<base::FilePath::StringType>(crashdb)),
-      this->upload_url,
+      make_file_path(handler), make_file_path(crashdb), this->upload_url,
       // data to send with POST requests uploading minidumps:
       std::map<std::string, std::string>{{"ProductName", this->app_name},
                                          {"Version", this->app_version}},
@@ -125,11 +126,9 @@ void Crashup::initCrashUploader() {
 #endif
 
   // turn on minidump uploads in crashdb settings
-  int res =
-      crashpad::CrashReportDatabase::Initialize(
-          base::FilePath(string_cast<base::FilePath::StringType>(crashdb)))
-          ->GetSettings()
-          ->SetUploadsEnabled(true);
+  int res = crashpad::CrashReportDatabase::Initialize(make_file_path(crashdb))
+                ->GetSettings()
+                ->SetUploadsEnabled(true);
   if (!res) {
     throw CrashupInitializationException(
         "crashpad::CrashReportDatabase::Settings::SetUploadsEnabled failed");
