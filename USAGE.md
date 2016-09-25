@@ -9,7 +9,7 @@ I assume that your project is CMake-based and uses Qt5 framework.
 1. Setup Hunter
 ---------------
 
-Add Hunter Gate file to your project - you can download it from [hunter-packages/gate repository](https://github.com/hunter-packages/gate/tree/abd2dc7bac9df33a4c1aede579b2ed151c8115e2).
+Add Hunter Gate file to your project - you can download it from [hunter-packages/gate repository](https://github.com/hunter-packages/gate).
 
 
 Setup Hunter repository (add this to the beginning of `CMakeLists.txt` before `project(...)` statement)
@@ -17,8 +17,8 @@ Setup Hunter repository (add this to the beginning of `CMakeLists.txt` before `p
 ```cmake
 include("cmake/HunterGate.cmake")
 HunterGate(
-    URL "<hunter archive url>"
-    SHA1 "<and its checksum>"
+    URL "https://github.com/ruslo/hunter/archive/v0.15.32.tar.gz"
+    SHA1 "0bc311b87b4c1c0ab51f091e3bffb47258afb708"
 )
 ```
 
@@ -40,6 +40,14 @@ Link your executable with crashup
 
 ```cmake
 target_link_libraries(my_executable crashup::crashup)
+```
+
+**NOTE:** Due to bug in Qt, you probably would like to link `my_executable` with Qt5 Widgets component (otherwise you get undefined references to `pcre*` during linking).
+
+```
+hunter_add_package(Qt)
+find_package(Qt5 CONFIG COMPONENTS Widgets REQUIRED)
+target_link_libraries(my_executable Qt5::Widgets)
 ```
 
 
