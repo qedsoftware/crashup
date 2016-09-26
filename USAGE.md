@@ -42,15 +42,6 @@ Link your executable with crashup
 target_link_libraries(my_executable crashup::crashup)
 ```
 
-**NOTE:** Due to bug in Qt, you probably would like to link `my_executable` with Qt5 Widgets component (otherwise you get undefined references to `pcre*` during linking).
-
-```
-hunter_add_package(Qt)
-find_package(Qt5 CONFIG COMPONENTS Widgets REQUIRED)
-target_link_libraries(my_executable Qt5::Widgets)
-```
-
-
 And copy `crashpad_handler` executable to directory where `my_executable` is placed.
 
 ```cmake
@@ -59,6 +50,8 @@ find_package(crashpad CONFIG REQUIRED)
 add_custom_command(
     TARGET my_executable
     PRE_BUILD
+    COMMAND
+    "${CMAKE_COMMAND}" -E make_directory "$<TARGET_FILE_DIR:foo>"
     COMMAND
     "${CMAKE_COMMAND}" -E copy
     "$<TARGET_FILE:crashpad::crashpad_handler>"
@@ -114,8 +107,8 @@ cmake_minimum_required(VERSION 3.0)
 
 include("cmake/HunterGate.cmake")
 HunterGate(
-    URL "<your URL to Hunter>"
-    SHA1 "<its SHA1>"
+    URL "https://github.com/ruslo/hunter/archive/v0.15.32.tar.gz"
+    SHA1 "0bc311b87b4c1c0ab51f091e3bffb47258afb708"
 )
 
 project(foo)
@@ -134,6 +127,8 @@ find_package(crashpad CONFIG REQUIRED)
 add_custom_command(
     TARGET foo
     PRE_BUILD
+    COMMAND
+    "${CMAKE_COMMAND}" -E make_directory "$<TARGET_FILE_DIR:foo>"
     COMMAND
     "${CMAKE_COMMAND}" -E copy
     "$<TARGET_FILE:crashpad::crashpad_handler>"
